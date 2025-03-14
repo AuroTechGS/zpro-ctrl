@@ -1,0 +1,95 @@
+{
+  "appId": "com.electron.app",
+  "productName": "lidar3Ds",
+  "directories": {
+    "buildResources": "build"
+  },
+  "files": [
+    "!**/.vscode/*",
+    "!src/*",
+    "!electron.vite.config.{js,ts,mjs,cjs}",
+    "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}",
+    "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
+    "!video_view",
+    "!testPhoto",
+    "!zproConThreads",
+    "!log_Z_ControlDll",
+    "!Log",
+    "!zproConfig.js",
+    "!applicationLog.txt",
+    "!depences",
+    "!frame_dir"
+  ],
+  "asarUnpack": [
+    "resources/**"
+  ],
+  "extraResources": [
+    {
+      "from": "../node-zprocam-api/build/Release",
+      "to": "./w64_ctrl_node"
+    },
+    {
+      "from": "./depences",
+      "to": "./depences"
+    },
+    {
+      "from": "./frame_dir",
+      "to": "../frame_dir"
+    }
+  ],
+  "win": {
+    "executableName": "lidar3Ds",
+    "target": [
+      "nsis",
+      "zip"
+    ]
+  },
+  "nsis": {
+    "useZip": false,
+    "artifactName": "${name}-${version}-setup.${ext}",
+    "shortcutName": "${productName}",
+    "uninstallDisplayName": "${productName}",
+    "oneClick": false,
+    "perMachine": true,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "./icon.ico",
+    "uninstallerIcon": "./icon.ico",
+    "installerHeaderIcon": "./icon.ico",
+    "createDesktopShortcut": true,
+    "customNsisBinary": {
+      "url": "file:///D:/winApp/nsis-3.10/Bin/makensis.exe",
+      "version": "3.10"
+    }
+  },
+  "mac": {
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "extendInfo": {
+      "NSCameraUsageDescription": "Application requests access to the device's camera.",
+      "NSMicrophoneUsageDescription": "Application requests access to the device's microphone.",
+      "NSDocumentsFolderUsageDescription": "Application requests access to the user's Documents folder.",
+      "NSDownloadsFolderUsageDescription": "Application requests access to the user's Downloads folder."
+    },
+    "notarize": false
+  },
+  "dmg": {
+    "artifactName": "${name}-${version}.${ext}"
+  },
+  "linux": {
+    "target": [
+      "AppImage",
+      "snap",
+      "deb"
+    ],
+    "maintainer": "electronjs.org",
+    "category": "Utility"
+  },
+  "appImage": {
+    "artifactName": "${name}-${version}.${ext}"
+  },
+  "npmRebuild": false,
+  "publish": {
+    "provider": "generic",
+    "url": "https://example.com/auto-updates"
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "ipAddr": "192.168.7",
+    "z2proDownPath": "video_view",
+    "resolutionCam": 3,
+    "fps": 25,
+    "bitrate": 50,
+    "shutter": 75,
+    "ISOValue": 100,
+    "necType": "h265",
+    "aeMode": 2
+}

@@ -1,0 +1,64 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  
+  html,
+  body {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  li {
+    list-style: none;
+  }
+  
+  #app {
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  
+  
+  .my_dialog_footer_box {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 8px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+
+  .el-notification.right {
+    right: 1px !important;
+  }
+  
+  /* 定义 SimpleBar 滚动条 */
+  .simplebar-scrollbar {
+    width: 10px;
+    /* 滚动条宽度 */
+  }
+  
+  /* 滚动条滑块的颜色（拖动部分） */
+  .simplebar-scrollbar:before {
+    background-color: #747679;
+    /* 滚动条滑块的背景色 */
+    border-radius: 8px;
+    /* 滚动条滑块的圆角 */
+  }
+  
+  /* 滚动条轨道的颜色 */
+  .simplebar-track {
+    /* background: rgba(0, 0, 0, 0.3); 滚动条轨道的背景色 */
+    background-color: transparent;
+    border-radius: 8px;
+  }
+  
+  
