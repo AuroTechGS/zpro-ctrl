@@ -23,12 +23,11 @@
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
-</el-dropdown> -->
-
+                </el-dropdown> -->
                 <div class="top-button-set" :class="[tabStatus === 1 ? 'top-button-active' : '']"
                     @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut" @click="imgSegFn">
                     <Crop style="width: 1em; height: 1em; margin-right: 4px;margin-top: 2px;" />
-                    分割
+                    建模
                 </div>
                 <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false" @mousedown.stop="stopDefaut"
                     @mouseup.stop="stopDefaut" :disabled="globals.$store.state.isFullScreenLoading">
@@ -94,7 +93,7 @@ const captureOtherFn = () => {
 
 const imgSegFn = () => {
     if (globals.$store.state.isFullScreenLoading) return;
-    router.push({ path: '/index/imgSegment', query: { id: 123 } });
+    router.push({ path: '/index/sourceSelect', query: { id: 123 } });
     tabStatus.value = 1;
 }
 const appSetingFn = (type) => {
@@ -191,6 +190,7 @@ const mufn = (e) => {
 
     .isSegImgs-noMax {
         color: #515252;
+
         &:hover {
             color: #515252;
             cursor: no-drop;

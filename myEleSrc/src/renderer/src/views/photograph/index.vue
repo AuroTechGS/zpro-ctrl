@@ -406,6 +406,7 @@ import { sleep } from "../../assets/js/untils";
 import moment from "moment";
 const globals = getCurrentInstance().appContext.config.globalProperties;
 
+
 let leftWidth = ref(285);
 let rightCaptGatherBox = ref(null);
 let leftCaptureBox = ref(null);
@@ -1739,13 +1740,6 @@ const openCurFile = (item) => {
   background-color: #fff;
   overflow: hidden;
 }
-
-.view-Page-two {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
 .set-left-menus {
   height: 100%;
   width: 175px;

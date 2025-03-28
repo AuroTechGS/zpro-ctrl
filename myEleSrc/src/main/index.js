@@ -11,6 +11,8 @@ const ftp = require('basic-ftp');
 const cv = require("opencv.js");
 const { createCanvas } = require("canvas");
 import moment from 'moment';
+// process.env.LD_LIBRARY_PATH = `${process.resourcesPath}/lib:${process.env.LD_LIBRARY_PATH}`;
+// console.log("LD_LIBRARY_PATH set to:", process.env.LD_LIBRARY_PATH);
 
 const sleep = (delay) => {
   return new Promise((resolve) => setTimeout(resolve, delay))

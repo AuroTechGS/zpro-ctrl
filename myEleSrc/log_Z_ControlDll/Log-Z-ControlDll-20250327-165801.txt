@@ -1,0 +1,146 @@
+[16:58:01][INFO]DLL start, log file path[./log_Z_ControlDll/Log-Z-ControlDll-20250327-165801.txt]
+
+[16:58:01][INFO]panodux Z SDK ver:0x000200d3
+
+[16:58:01][INFO]host name[akswb]
+
+[16:58:01][INFO]Your all IP address are
+
+[16:58:01][INFO]  192.168.31.194
+
+[16:58:01][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:01][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:01][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 394]  Bind  Sock Failed£¡
+
+[16:58:01][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 464] UdpConnect2Membership err
+
+[16:58:04][INFO]host name[akswb]
+
+[16:58:04][INFO]Your all IP address are
+
+[16:58:04][INFO]  192.168.31.194
+
+[16:58:04][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethern[16:58:06][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[16:58:06][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[16:58:06][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+[16:58:07][INFO]host name[akswb]
+
+[16:58:07][INFO]Your all IP address are
+
+[16:58:07][INFO]  192.168.31.194
+
+[16:58:07][INF[16:58:07][INFO]host name[akswb]
+
+[16:58:07][INFO]Your all IP address are
+
+[16:58:07][INFO]  192.168.31.194
+
+[16:58:07][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:07][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:07][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 394]  Bind  Sock Failed£¡
+
+[16:58:07][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 464] UdpConnect2Membership err
+
+[16:58:10][INFO]host name[akswb]
+
+[16:58:10][INFO]Your all IP address are
+
+[16:58:10][INFO]  192.168.31.194
+
+[16[16:58:12][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[16:58:12][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[16:58:12][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+[16:58:13][INFO]host name[akswb]
+
+[16:58:13][INFO]Your all IP address are
+
+[16:58:13][INFO]  192.168.31.194
+
+[16:58:13][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********[16:58:13][INFO]host name[akswb]
+
+[16:58:13][INFO]Your all IP address are
+
+[16:58:13][INFO]  192.168.31.194
+
+[16:58:13][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:13][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:13][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 394]  Bind  Sock Failed£¡
+
+[16:58:13][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 464] UdpConnect2Membe[16:58:18][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[16:58:18][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[16:58:18][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+[16:58:19][INFO]host name[akswb]
+
+[16:58:19][INFO]Your all IP address are
+
+[16:58:19][INFO]  192.168.31.194
+
+[16:58:19][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:19][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_C[16:58:19][INFO]host name[akswb]
+
+[16:58:19][INFO]Your all IP address are
+
+[16:58:19][INFO]  192.168.31.194
+
+[16:58:19][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:19][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:19][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 394]  Bind  Sock Failed£¡
+
+[1[16:58:24][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[16:58:24][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[16:58:24][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+[16:58:25][INFO]host name[akswb]
+
+[16:58:25][INFO]Your all IP address are
+
+[16:58:25][INFO]  192.168.31.194
+
+[16:58:25][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:25][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:25][[16:58:25][INFO]host name[akswb]
+
+[16:58:25][INFO]Your all IP address are
+
+[16:58:25][INFO]  192.168.31.194
+
+[16:58:25][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:25][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:25][ERR][e:\workspace\z2\windows[16:58:30][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[16:58:30][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[16:58:30][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+ontrol_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.194] *********
+
+[16:58:28][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.194]
+
+[16:58:28][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 394]  Bind  Sock Failed£¡
+
+[16:58:28][ERR][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 464] UdpConnect2Membership err
+

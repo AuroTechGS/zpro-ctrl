@@ -77,9 +77,14 @@
   },
   "linux": {
     "target": [
-      "AppImage",
-      "snap",
-      "deb"
+      "deb",
+      "tar.gz"
+    ],
+    "extraResources": [
+      {
+        "from": "/root/libjpeg-turbo-test/libjpeg-turbo-2.1.5.1/build/libjpeg.so.62.3.0",
+        "to": "./lib/libjpeg.so.62"
+      }
     ],
     "maintainer": "electronjs.org",
     "category": "Utility"

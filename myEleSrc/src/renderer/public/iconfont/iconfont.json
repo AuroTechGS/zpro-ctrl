@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "4320344",
+      "name": "开始",
+      "font_class": "kaishi",
+      "unicode": "e657",
+      "unicode_decimal": 58967
+    },
+    {
+      "icon_id": "5387543",
+      "name": "删除",
+      "font_class": "shanchu1",
+      "unicode": "eafb",
+      "unicode_decimal": 60155
+    },
+    {
+      "icon_id": "16069349",
+      "name": "开始",
+      "font_class": "kaishi1",
+      "unicode": "e677",
+      "unicode_decimal": 58999
+    },
+    {
+      "icon_id": "20266191",
+      "name": "更多",
+      "font_class": "gengduo",
+      "unicode": "e6da",
+      "unicode_decimal": 59098
+    },
+    {
       "icon_id": "1126",
       "name": "文件夹",
       "font_class": "wenjianjia",

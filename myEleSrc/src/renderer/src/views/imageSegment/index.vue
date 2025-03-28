@@ -70,6 +70,17 @@
           ></i
         ></el-tooltip>
       </div>
+      <div
+        class="seg-icon-base"
+        :class="[activeToolStatus == 2 ? 'icon-seg-active' : '']"
+      >
+        <el-tooltip content="根据标注点查找图层" placement="right" effect="light">
+          <el-icon class="dorDefaut" @click="toolsChange(2)">
+            <Search />
+          </el-icon>
+        </el-tooltip>
+      </div>
+
       <div class="tooles-line-seg"></div>
       <div
         class="seg-icon-base-two"
@@ -160,6 +171,9 @@
       <div class="right-seg-project-layer">
         <div class="tips-tab">
           <span>所有图层</span>
+          <span class="to-dele-fw" @click="toDeleteFn()" v-if="allLayers.length"
+            >批量删除</span
+          >
           <!-- <span
             >全部预览：<el-switch
               v-model="isPreviewAllLayer"
@@ -169,7 +183,7 @@
               @change="isPreviewAllLayerChangeFn"
           /></span> -->
         </div>
-        <div class="layer-box">
+        <div class="layer-box" data-simplebar>
           <div
             v-for="(item, index) in allLayers"
             class="item-layer-card"
@@ -189,6 +203,30 @@
         </div>
       </div>
     </div>
+    <el-dialog
+      v-model="centerDialogVisible"
+      title="批量删除图层"
+      width="500"
+      align-center
+    >
+      <div style="padding: 10px">
+        <span>请输入要删除图层的范围:</span>
+        <div style="margin: 10px; margin-left: 18%">
+          <el-input-number v-model="deleStartNum" :step="1" :min="1" :max="1000" />
+          --
+          <el-input-number v-model="deleEndNum" :step="1" :min="1" :max="1000" />
+        </div>
+        <div style="color: red; font-size: 12px; padding: 10px; height: 30px">
+          {{ fwTips }}
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer" style="padding: 10px">
+          <el-button size="small" @click="centerDialogVisible = false">取消</el-button>
+          <el-button size="small" type="primary" @click="confirmDelete"> 确认 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -230,9 +268,14 @@ let mapConfig = {
   zoomMax: 20,//最大
 };
 
+let centerDialogVisible = ref(false);
+
 
 let scaleOffsetX = 0;
 let scaleOffsetY = 0;
+
+let deleStartNum = ref(1);
+let deleEndNum = ref(1);
 
 let curShowPngObj = reactive({});
 
@@ -249,6 +292,8 @@ let lastScale = 1;
 let isShowSegPng = ref(false);
 let isEdited = false;
 
+let fwTips = ref('')
+
 let imgWidth = 0;
 let imgHeight = 0;
 
@@ -262,7 +307,6 @@ onMounted(() => {
   globals.$store.state.isImagesSeg = true;
   nextTick(async () => {
     await sleep(500);
-    isPreviewAllLayer.value = true
     stage = new Konva.Stage({
       container: "container",
       width: window.innerWidth - 550,
@@ -351,6 +395,61 @@ const getFilesTree = async () => {
     }
   }
 }
+
+
+const toDeleteFn = () => {
+  if (!curShowPngObj.filePath) return;
+  if (isEditLayer) {
+    return ElMessage.error('请先确认完成当前正在编辑图层， 点击工具栏对勾图标')
+  }
+  fwTips.value = ''
+  centerDialogVisible.value = true
+}
+
+const confirmDelete = () => {
+  if (deleStartNum.value > deleEndNum.value) {
+    fwTips.value = '范围输入错误，请重新输入'
+    return;
+  }
+  if (deleEndNum.value > allCicles.length) {
+    fwTips.value = '范围输入错误，请重新输入'
+    return;
+  }
+  for (let i = deleEndNum.value - 1; i >= deleStartNum.value - 1; i--) {
+    if (i === curShowLayerIndex.value) {
+      curShowLayerIndex.value = null;
+      allCicles.forEach((item) => {
+        item.forEach(iccm => {
+          iccm.setStroke("transparent");
+        })
+      })
+      layer.batchDraw();//重绘
+      line = null;
+      circleList = [];
+      pointsList = [];
+    } else {
+      if (curShowLayerIndex.value > i) {
+        curShowLayerIndex.value = curShowLayerIndex.value - 1;
+      }
+    }
+    allLayers.value.splice(i, 1);
+    let needDeletLine = allLines.splice(i, 1);
+    console.log(needDeletLine)
+    needDeletLine.forEach(item => {
+      !!item && item.destroy();
+    })
+    let needDeletCircles = allCicles.splice(i, 1);
+    needDeletCircles.forEach(item => {
+      item.forEach(iccm => {
+        !!iccm && iccm.destroy();
+      })
+    })
+  }
+  dragAndDelAndAddPoint();
+  layer.batchDraw();//重绘
+  centerDialogVisible.value = false
+}
+
 // 选择显示图片
 const dbSelectCurPng = (item) => {
   if (item.filePath === curShowPngObj.filePath) {
@@ -359,16 +458,16 @@ const dbSelectCurPng = (item) => {
   if (isEditLayer) {
     return ElMessage.error('请先完成当前图像分割， 再切换其他图像')
   }
-  if (isEdited && !item.isEdit) {
+  if (isEdited) {
     return ElMessage.error('请先确认或完成当前图像分割， 再切换其他图像')
   }
   if (curSetFrame === null) {
     curSetFrame = item.parentNodeName;
   }
-  if (!item.isEdit && item.parentNodeName !== curSetFrame && curFrameImgNum < oneFramePngNum) {
+  if (item.parentNodeName !== curSetFrame && curFrameImgNum < oneFramePngNum) {
     return ElMessage.error(`请先确认或完成当前桢【${curShowPngObj.parentNodeName}】所有图像分割， 再切换其他桢图像`)
   }
-  if (!item.isEdit && item.parentNodeName !== curSetFrame && curFrameImgNum >= oneFramePngNum) {
+  if (item.parentNodeName !== curSetFrame && curFrameImgNum >= oneFramePngNum) {
     curFrameImgNum = 1;
     curSetFrame = item.parentNodeName;
   }
@@ -384,7 +483,7 @@ const dbSelectCurPng = (item) => {
       item.destroy();
     });
   }
-  isEdited = !item.isEdit;
+  isEdited = true;
   allCicles = [];
   allLines = [];
   allLayers.value = [];
@@ -407,9 +506,10 @@ const toolsChange = async (val) => {
   isPreviewAllLayer.value = false;
   activeToolStatus.value = val;
 
+  stage.off("click");
   if (val == 0) {
+    isPreviewAllLayerChangeFn(false);
     stage.container().style.cursor = "default";
-    stage.off("click"); // 移除所有 click 事件
     pointStatus.value = -1;
   }
   if (val == 1) {
@@ -418,11 +518,11 @@ const toolsChange = async (val) => {
     addImgsClicksFn();
   }
   if (val == 2) {
-    allLayers.value.push(pointsList);
-    allLines.push(line);
-    allCicles.push(circleList)
-    pointsList = []
-    line = null;
+    stage.container().style.cursor = "crosshair";
+    stage.off("click");
+    pointStatus.value = -1;
+    isPreviewAllLayerChangeFn(true);
+    addImgsFindClicksFn();
   }
 }
 let pointStatus = ref(0);
@@ -460,6 +560,40 @@ const editPointFn = (type) => {
       item.draggable(true);
     })
   }
+}
+
+
+const addImgsFindClicksFn = () => {
+  stage.off("click");
+  stage.on("click", (event) => {
+    const pointerPos = stage.getPointerPosition();
+    if (event.evt.button === 0) {
+      let isClickCurLayerIndex = -1;
+      if (allCicles.length) {
+        for (let i = 0; i < allCicles.length; i++) {
+          for(let k = 0; k < allCicles[i].length; k++) {
+            if (allCicles[i][k].intersects(pointerPos)) {
+              isClickCurLayerIndex = i;
+              break;
+            }
+          }
+          if (isClickCurLayerIndex !== -1) {
+            break;
+          }
+        }
+        if (isClickCurLayerIndex !== -1) {
+          ElMessage({
+            message: `点击标注点所在图层为：${isClickCurLayerIndex + 1}`,
+            type: 'success',
+            grouping: true,
+            plain: true,
+            showClose: true,
+            offset: 90,
+          })
+        }
+      }
+    }
+  })
 }
 
 const endEditMask = async () => {
@@ -762,6 +896,19 @@ const deleteLayerFn = (index) => {
     }).then(() => {
       if (index === curShowLayerIndex.value) {
         curShowLayerIndex.value = null;
+        allCicles.forEach((item, itemIndex) => {
+          item.forEach(iccm => {
+            iccm.setStroke("transparent");
+          })
+        })
+        layer.batchDraw();//重绘
+        line = null;
+        circleList = [];
+        pointsList = [];
+      } else {
+        if (curShowLayerIndex.value > index) {
+          curShowLayerIndex.value = curShowLayerIndex.value - 1;
+        }
       }
       allLayers.value.splice(index, 1);
       let needDeletLine = allLines.splice(index, 1);
@@ -797,27 +944,26 @@ const dirFilesClickFn = (item) => {
   }
 }
 
-// const isPreviewAllLayerChangeFn = (val, type = 2) => {
-//   if ((isEditLayer || activeToolStatus.value !== 0) && type !== 1) {
-//     isPreviewAllLayer.value = !isPreviewAllLayer.value;
-//     return ElMessage.error('请先确认完成当前正在编辑图层， 点击工具栏对勾图标')
-//   }
-//   if (val) {
-//     allCicles.forEach((item) => {
-//       item.forEach(iccm => {
-//         iccm.setStroke("red");
-//       })
-//     })
-//   }
-//   if (!val) {
-//     allCicles.forEach((item) => {
-//       item.forEach(iccm => {
-//         iccm.setStroke("transparent");
-//       })
-//     })
-//   }
-//   curShowLayerIndex.value = null;
-// }
+const isPreviewAllLayerChangeFn = (val, type = 2) => {
+  if (isEditLayer && type !== 1 && (activeToolStatus.value === 1)) {
+    return ElMessage.error('请先确认完成当前正在编辑图层， 点击工具栏对勾图标')
+  }
+  if (val) {
+    allCicles.forEach((item) => {
+      item.forEach(iccm => {
+        iccm.setStroke("red");
+      })
+    })
+  }
+  if (!val) {
+    allCicles.forEach((item) => {
+      item.forEach(iccm => {
+        iccm.setStroke("transparent");
+      })
+    })
+  }
+  curShowLayerIndex.value = null;
+}
 
 // 还原
 const reOrginFn = () => {
@@ -839,6 +985,7 @@ const reOrginFn = () => {
 }
 // 滚动缩放
 const addZoomEvent = () => {
+  stage.off("wheel");
   stage.on("wheel", (e) => {
     e.evt.preventDefault();
     var min = 1; // 缩小最小的比例
@@ -1021,8 +1168,6 @@ const scaleChangeFn = (val) => {
     } else {
       stage.setAttrs({ draggable: true })
     }
-
-
     if (val - lastScale >= 0) {
       let step = val - lastScale;
       if (mapConfig.zoom + step >= 20) {
@@ -1077,6 +1222,7 @@ const scaleChangeFn = (val) => {
   }
 }
 const addImgsClicksFn = () => {
+  stage.off("click");
   stage.on("click", (event) => {
     const pointerPos = stage.getPointerPosition();
     const scale = stage.scaleX();
@@ -1138,7 +1284,6 @@ const addImgsClicksFn = () => {
         lineJoin: "round",
       });
       layer.add(line);
-
     } else {
       if (line) {
         line.destroy(); // 先删除旧线
@@ -1348,12 +1493,7 @@ const getPointsFn = async () => {
   overflow: hidden;
 }
 
-.view-Page-two {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
+
 
 .left-project-files {
   width: 250px;
@@ -1544,6 +1684,11 @@ const getPointsFn = async () => {
   @extend .no-select-params;
 }
 
+.layer-box {
+  height: calc(100% - 35px);
+  overflow-y: auto;
+}
+
 .item-layer-card {
   width: 92%;
   margin-left: 4%;
@@ -1596,5 +1741,18 @@ const getPointsFn = async () => {
 .my-icon-png {
   color: rgb(242, 159, 187);
   margin: 0 5px;
+}
+
+.to-dele-fw {
+  font-size: 12px;
+  background-color: #737272;
+  border-radius: 3px;
+  padding: 3px 6px;
+  margin-right: 5px;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 </style>

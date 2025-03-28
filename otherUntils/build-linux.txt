@@ -1,0 +1,6 @@
+ 
+1、  cd  /dist；
+2、  tar -xzvf lidar3ds-1.0.1.tar.gz     // 先解压
+5、  cd  otherUntils
+5、  gcc launcher.c -o launcher
+7、  tar -czvf lidar3ds-final-1.0.1.tar.gz lidar3ds-1.0.1/
