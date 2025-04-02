@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :model-value="props.isShow" title="正在连接中，请勿进行其他操作" width="500" height="32%" align-center @open="open"
+    <el-dialog :model-value="props.isShow" title="正在进行预处理第一步，请等待..." width="500" height="32%" align-center @open="open"
         :before-close="handleClose" :close-on-click-modal="false" :close-on-press-escape="false">
         <div class="open-process">
             <el-progress :percentage="globals.$store.state.camConnectPerset" :stroke-width="20" status="success" striped striped-flow

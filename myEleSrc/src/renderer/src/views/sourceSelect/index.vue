@@ -6,12 +6,18 @@
         <span :class="[fileStatus == 0 ? 'active-btns' : '']" @click="selectStatus(0)"
           >全部</span
         >
-        <!-- <span :class="[fileStatus == 1 ? 'active-btns' : '']" @click="selectStatus(1)"
-          >未开始</span
-        > -->
-        <span :class="[fileStatus == 2 ? 'active-btns' : '']" @click="selectStatus(2)"
+        <span :class="[fileStatus == 1 ? 'active-btns' : '']" @click="selectStatus(1)"
+          >进行中</span
+        >
+        <span
+          class="last-span"
+          :class="[fileStatus == 2 ? 'active-btns' : '']"
+          @click="selectStatus(2)"
           >已完成</span
         >
+        <div class="refrush-box" title="刷新">
+          <i class="iconfont icon-shuaxin" @click="refrushFn"></i>
+        </div>
       </div>
       <div class="source-list-box">
         <ul>
@@ -107,7 +113,7 @@
           <span style="padding-left: 10px">（{{ curShowVideoTime }}秒）</span>
         </div>
         <div style="margin-top: 15px">
-          <span>选择类型：</span>
+          <span>选择范围：</span>
           <el-select
             v-model="selectType"
             :teleported="false"
@@ -173,6 +179,7 @@ import { createWS, sendWs } from "../../assets/js/wsClient.js";
 import { sleep } from "../../assets/js/untils";
 const globals = getCurrentInstance().appContext.config.globalProperties;
 import { useRouter } from "vue-router";
+import { debounce } from "lodash";
 
 const router = useRouter();
 
@@ -313,6 +320,13 @@ onMounted(async () => {
 
 onUnmounted(() => {});
 
+const refrushFn = async () => {
+  globals.$store.state.fullScreenloadingText = "正在获取我的资源中，请稍等...";
+  globals.$store.state.isFullScreenLoading = true;
+  await sleep(1000);
+  sendWs({ reqType: "/getAllSourcefile" });
+};
+
 const videoPlayFn = () => {
   if (!curReadyVideoPath.length) return;
   isFirstOpen.value = false;
@@ -360,7 +374,7 @@ const videoPlayFn = () => {
   });
 };
 
-const startSplitVideo = () => {
+const startSplitVideo = debounce(() => {
   if (startTime.value >= endTime.value || endTime.value > curShowVideoTime.value) {
     return ElMessage({
       message: "开始时间不得大于结束时间， 并且结束时间不能大于视频总时长",
@@ -381,7 +395,7 @@ const startSplitVideo = () => {
   router.push(
     `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=0`
   );
-};
+}, 1000);
 
 const open = () => {};
 
@@ -401,7 +415,7 @@ const dealFiles = (data) => {
 };
 
 // 开始分割
-const startItemFile = (val) => {
+const startItemFile = debounce((val) => {
   videoSelectShow.value = true;
   selectType.value = 0;
   isFirstOpen.value = true;
@@ -415,7 +429,7 @@ const startItemFile = (val) => {
     reqType: "/getselectCover",
     sourcePath: val.full_path,
   });
-};
+}, 1000);
 
 // 继续上次操作
 const continue_lastFn = (val) => {
@@ -490,7 +504,7 @@ const moreFn = () => {};
     border-top-left-radius: 3px;
   }
 
-  span:last-child {
+  .last-span {
     border-bottom-right-radius: 3px;
     border-top-right-radius: 3px;
     border-right: none;
@@ -647,6 +661,24 @@ const moreFn = () => {};
 
   &:hover {
     opacity: 0.8;
+  }
+}
+.refrush-box {
+  // display: inline-block;
+  float: right;
+  font-size: 24px;
+  width: 28px;
+  height: 28px;
+  color: rgb(41, 185, 41);
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
+  i {
+    font-size: 22px !important;
+    &::before {
+      font-size: 22px !important;
+    }
   }
 }
 </style>

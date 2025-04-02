@@ -144,7 +144,7 @@ const closeFn = () => {
   z-index: 2001 !important;
 }
 
-.el-dialog__header.show-close {
+.el-dialog__header {
   height: 30px;
   line-height: 30px;
   background-color: #7d6060;
@@ -152,6 +152,15 @@ const closeFn = () => {
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
+
+/* .el-dialog__header.show-close {
+  height: 30px;
+  line-height: 30px;
+  background-color: #7d6060;
+  padding: 0 10px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+} */
 
 .el-dialog__headerbtn {
   height: 30px;

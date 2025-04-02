@@ -10,6 +10,7 @@ let reconnectTimer = null
 let heartbeatTimer = null
 let reconnectAttempts = 0
 
+export const CAMERANUM = 24
 
 const MAX_RECONNECT_ATTEMPTS = 5
 const HEARTBEAT_INTERVAL = 20000
