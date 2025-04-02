@@ -37,12 +37,12 @@ import { Loading } from "@element-plus/icons-vue";
 .loading-all-screen {
   height: 100%;
   width: 100%;
-  z-index: 2100;
+  z-index: 2002;
   position: absolute !important;
   top: 0;
   left: 0;
   // background-color: #ccc;
-  background-color: rgba(149, 149, 149, 0.7);
+  background-color: rgba(99, 97, 97, 0.8);
   // opacity: 0.3;
   display: flex;
   justify-content: center;

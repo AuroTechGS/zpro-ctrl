@@ -22,16 +22,39 @@
               <i class="iconfont icon-gengduo dorDefaut" @click="moreFn(1)"></i>
             </div>
             <div class="item-btns">
-              <el-button type="primary" plain style="padding: 5px 10px 5px 5px">
+              <el-button
+                type="primary"
+                v-if="item.runStatus == 0"
+                plain
+                style="padding: 5px 10px 5px 5px"
+              >
                 <i class="iconfont icon-kaishi" style="margin-right: 3px"></i>
                 <span style="vertical-align: middle" @click="startItemFile(item)"
                   >开始</span
                 >
               </el-button>
-              <!-- <el-button type="primary" size="small" plain style="padding: 5px">
+              <el-button
+                type="primary"
+                v-if="item.runStatus == 1"
+                plain
+                style="padding: 5px"
+              >
                 <i class="iconfont icon-kaishi1" style="margin-right: 2px"></i>
-                <span style="vertical-align: middle">继续</span>
-              </el-button> -->
+                <span style="vertical-align: middle" @click="continue_lastFn(item)"
+                  >继续</span
+                >
+              </el-button>
+              <el-button
+                type="primary"
+                v-if="item.runStatus == 1 || item.runStatus == 2"
+                plain
+                style="padding: 5px"
+              >
+                <i class="iconfont icon-kaishi" style="margin-right: 3px"></i>
+                <span style="vertical-align: middle" @click="startItemFile(item)"
+                  >重新开始</span
+                >
+              </el-button>
             </div>
           </li>
         </ul>
@@ -76,7 +99,7 @@
             font-weight: 600;
           "
         >
-          请选择时间范围后确定进行下一步
+          请选择时间范围后进行下一步
         </div>
         <div style="margin-top: 20px">
           <span>视频时长：</span>
@@ -147,8 +170,12 @@ import {
 import { ElMessage, ElNotification } from "element-plus";
 import moment from "moment";
 import { createWS, sendWs } from "../../assets/js/wsClient.js";
-
+import { sleep } from "../../assets/js/untils";
 const globals = getCurrentInstance().appContext.config.globalProperties;
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 let sourceList = ref([]);
 let fileStatus = ref(0);
 let bufferQueue = [];
@@ -162,7 +189,6 @@ let typeOptions = reactive([
   { label: "自定义时间范围", value: 1 },
 ]);
 
-import { sleep } from "../../assets/js/untils";
 let videoSelectShow = ref(false);
 let sourceBuffer = null;
 let mediaSource = null;
@@ -211,9 +237,6 @@ watch(wsMessage, (newVal) => {
             offset: 75,
           });
         }
-        if (val.repType == "log-split-video-process") {
-          console.log(val);
-        }
         if (val.repType == "/getAllSourcefile" && val.state === 200) {
           dealFiles(val.data);
           globals.$store.state.isFullScreenLoading = false;
@@ -237,11 +260,40 @@ watch(wsMessage, (newVal) => {
             }, 2000);
           }
         }
-        if (val.repType == "/cancelVideoFrame" && val.state === 200) {
+        if (val.repType == "/getLastRunTask" && val.state === 200) {
           console.log(val);
-        }
-        if (val.repType == "/startSplitVideoFrame" && val.state === 200) {
-          console.log(val);
+          globals.$store.state.curModuleObj = curVideoObj;
+          if (val.data.length == 1) {
+            if (val.data[0].start_frame_time !== null) {
+              selectType.value = 1;
+              startTime.value = Number(val.data[0].start_frame_time);
+              endTime.value = Number(val.data[0].end_frame_time);
+            } else {
+              selectType.value = 0;
+            }
+            router.push(
+              `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=1`
+            );
+          }
+          if (val.data.length == 2) {
+            if (val.data[0].start_frame_time !== null) {
+              selectType.value = 1;
+              startTime.value = Number(val.data[0].start_frame_time);
+              endTime.value = Number(val.data[0].end_frame_time);
+            } else {
+              selectType.value = 0;
+            }
+            if (Number(val.data[1].status) == 0) {
+              router.push(
+                `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=1`
+              );
+            } else {
+              let cailNum = Number(val.data[1].cailbrate_frame_num);
+              router.push(
+                `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=2&cailNum=${cailNum}`
+              );
+            }
+          }
         }
       }
     }
@@ -299,7 +351,6 @@ const videoPlayFn = () => {
   );
   mediaSource.addEventListener("sourceopen", () => {
     const mime = 'video/mp4; codecs="avc1.42E01E"'; // h264
-    // const mime = 'video/mp4; codecs="hvc1.1.6.L93.B0"'; // h265
     sourceBuffer = mediaSource.addSourceBuffer(mime);
     sourceBuffer.addEventListener("updateend", () => {
       isAppending = false;
@@ -326,13 +377,10 @@ const startSplitVideo = () => {
       sourcePath: curReadyVideoPath,
     });
   }
-  sendWs({
-    reqType: "/startSplitVideoFrame",
-    sourcePath: curVideoObj.full_path,
-    type: selectType.value,
-    startTime: startTime.value,
-    endTime: endTime.value,
-  });
+  globals.$store.state.curModuleObj = curVideoObj;
+  router.push(
+    `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=0`
+  );
 };
 
 const open = () => {};
@@ -349,8 +397,10 @@ const dealFiles = (data) => {
     item.creatDate = moment(item.created_at).format("YYYY-MM-DD HH:mm:ss");
   });
   sourceList.value = data;
+  console.log(sourceList.value);
 };
 
+// 开始分割
 const startItemFile = (val) => {
   videoSelectShow.value = true;
   selectType.value = 0;
@@ -366,6 +416,20 @@ const startItemFile = (val) => {
     sourcePath: val.full_path,
   });
 };
+
+// 继续上次操作
+const continue_lastFn = (val) => {
+  for (let key in val) {
+    curVideoObj[key] = val[key];
+  }
+  sendWs({
+    reqType: "/getLastRunTask",
+    sourcePath: val.full_path,
+    sourceName: val.name,
+  });
+};
+
+// 关闭弹框
 const dialogCloseFn = () => {
   videoSelectShow.value = false;
   mediaSource = null;
@@ -465,6 +529,7 @@ const moreFn = () => {};
     overflow-y: auto;
     align-items: flex-start;
     justify-content: flex-start;
+
     &::-webkit-scrollbar {
       width: 7px;
       height: 7px;
@@ -487,12 +552,14 @@ const moreFn = () => {};
       border-radius: 12px;
       padding: 8px 6px;
       filter: drop-shadow(1px 2px 6px rgb(167, 238, 240));
+
       .item-name {
         width: calc(100% - 22px);
         font-size: 20px;
         font-weight: 600;
         color: #1c8593;
       }
+
       .item-more {
         width: 30px;
         height: 30px;
@@ -514,11 +581,13 @@ const moreFn = () => {};
           color: rgb(15, 119, 121);
         }
       }
+
       .item-btns {
         position: absolute;
         bottom: 20px;
         left: 15px;
       }
+
       &:hover {
         // transform: scale(1.05, 1.05);
       }
@@ -536,6 +605,7 @@ const moreFn = () => {};
   padding: 10px;
   display: flex;
   justify-content: space-between;
+
   .left-video-show {
     width: 72%;
     height: 100%;
@@ -544,6 +614,7 @@ const moreFn = () => {};
     padding: 20px 3px;
     position: relative;
   }
+
   .right-time-select {
     width: 27%;
     height: 100%;
@@ -551,6 +622,7 @@ const moreFn = () => {};
     border-radius: 5px;
     padding: 8px 5px;
     position: relative;
+
     .video-show-btns {
       position: absolute;
       bottom: 30px;
@@ -568,9 +640,11 @@ const moreFn = () => {};
   left: 14px;
   color: white;
   cursor: pointer;
+
   i {
     font-size: 24px !important;
   }
+
   &:hover {
     opacity: 0.8;
   }

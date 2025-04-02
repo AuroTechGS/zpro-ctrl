@@ -134,14 +134,14 @@ const closeFn = () => {
   top: 35px;
   left: 0;
   right: 0;
-  z-index: 4000 !important;
+  z-index: 2001 !important;
 }
 
 .el-dialog {
   --el-dialog-padding-primary: 0 !important;
   --el-dialog-bg-color: white !important;
   background-color: white !important;
-  z-index: 4000 !important;
+  z-index: 2001 !important;
 }
 
 .el-dialog__header.show-close {
