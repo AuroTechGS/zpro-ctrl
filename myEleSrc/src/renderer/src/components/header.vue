@@ -1,6 +1,6 @@
 <template>
-    <div class="head-box" @mousedown="mdfn" @mouseup="mufn">
-        <div class="nav-left">
+    <div class="head-box">
+        <div class="nav-left" @mousedown="mdfn" @mouseup="mufn">
             <img class="ico-img" src="../assets/images/icoimg.png" alt=""></img>
             <div class="menus-seting">
                 <!-- <div class="top-button-set" :class="[tabStatus === 0 ? 'top-button-active' : '']"

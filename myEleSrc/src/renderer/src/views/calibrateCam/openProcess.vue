@@ -9,7 +9,6 @@
     :before-close="handleClose"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    :show-close="false"
   >
     <div class="open-process">
       <el-progress
@@ -24,7 +23,7 @@
       />
     </div>
     <div class="my_dialog_footer_box" style="background-color: #cdd0d6">
-      <!-- <el-button size="small" @click="handleClose" plain>取消</el-button> -->
+      <el-button size="small" @click="handleClose" plain>取消</el-button>
     </div>
   </el-dialog>
 </template>

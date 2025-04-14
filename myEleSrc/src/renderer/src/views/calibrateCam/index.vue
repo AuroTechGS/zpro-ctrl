@@ -5,11 +5,13 @@
         {{ globals.$store.state.curModuleObj.name }}
       </div>
       <div class="cail_ck-val">
-        时间范围：<span style="color: #07c160">{{ "全部" }}</span>
+        时间范围：<span style="color: #07c160">{{
+          firstType == 0 ? "全部" : `${startTime}s - ${endTime}s`
+        }}</span>
       </div>
-      <div class="cail_ck-val">
+      <!-- <div class="cail_ck-val">
         标定参考值：<span style="color: #07c160">{{ 0 }}</span>
-      </div>
+      </div> -->
       <div class="cailbrate_result_box">
         <span
           class="active-btns small-btn"
@@ -26,7 +28,7 @@
       :isShow="showProcBox"
       :processVal="splitProcess"
       :curTitle="processTitle"
-      @closeDialog="dialogCloseFn"
+      @closeDialog="proDialogCloseFn"
     />
     <decription
       :isShow="showDescribe"
@@ -60,9 +62,10 @@ const route = useRoute();
 const router = useRouter();
 let frameCailNum = ref(1);
 let curVideoObj = reactive({});
-let firstType = 0;
+let firstType = ref(0);
 let allFrameNum = 0;
-let startTime = 0;
+let startTime = ref(0);
+let endTime = ref(0);
 let splitStepProcess = Number((98 / CAMERANUM).toFixed(0));
 let splitProcess = ref(0);
 const wsMessage = computed(() => globals.$store.state.wsMessage);
@@ -73,6 +76,7 @@ let showDescribe = ref(false);
 watch(wsMessage, (newVal) => {
   if (newVal) {
     let val = JSON.parse(newVal);
+    console.log(val);
     if (val.repType) {
       if (val.state === 400) {
         ElMessage({
@@ -91,6 +95,7 @@ watch(wsMessage, (newVal) => {
         val.data.indexOf("split_log:") !== -1
       ) {
         splitProcess.value = Math.floor(splitProcess.value + splitStepProcess);
+        // console.log(val)
       }
       // 目标分割日志
       if (val.repType == "undistort_images_log" && val.state === 200) {
@@ -105,7 +110,7 @@ watch(wsMessage, (newVal) => {
             showProcBox.value = false;
             globals.$store.state.isFullScreenLoading = true;
             globals.$store.state.fullScreenloadingText = "相机开始标定， 请稍等...";
-            frameCailNum.value = Number(startTime * 25) + 1;
+            frameCailNum.value = Number(startTime.value * 25) + 1;
             calibrateCamFn();
           }, 500);
         }
@@ -151,8 +156,18 @@ const selectStatus = () => {
   router.push("/index/sourceSelect");
 };
 
+const proDialogCloseFn = () => {
+  if (processTitle.value === "正在第一步数据预处理中，请勿操作") {
+    sendWs({
+      reqType: "/cancelTaskPreset",
+      sourceName: globals.$store.state.curModuleObj.name,
+      taskName: splitProcess.value < 96 ? "split_video" : "construct_frames",
+    });
+  }
+  // showProcBox.value = false;
+};
+
 const dialogCloseFn = () => {
-  showProcBox.value = false;
   showDescribe.value = false;
 };
 
@@ -163,9 +178,11 @@ onMounted(async () => {
     curVideoObj[key] = globals.$store.state.curModuleObj[key];
   }
   let params = route.query || {};
-  firstType = params.type;
-  startTime = params.startTime;
+  firstType.value = Number(params.type);
+  startTime.value = Number(params.startTime);
+  endTime = Number(params.endTime);
   splitProcess.value = 0;
+
   if (params.others == 0) {
     showProcBox.value = true;
     processTitle.value = "正在第一步数据预处理中，请勿操作";
@@ -181,7 +198,7 @@ onMounted(async () => {
   if (params.others == 1) {
     globals.$store.state.isFullScreenLoading = true;
     globals.$store.state.fullScreenloadingText = "第二步相机开始标定， 请稍等...";
-    frameCailNum.value = Number(startTime * 25) + 1;
+    frameCailNum.value = Number(startTime.value * 25) + 1;
     calibrateCamFn();
   }
   if (params.others == 2) {
@@ -198,10 +215,10 @@ onMounted(async () => {
       globals.$store.state.isFullScreenLoading = false;
     }, 3000);
   }
-  if (firstType == 0) {
+  if (firstType.value == 0) {
     allFrameNum = 1000;
   }
-  if (firstType == 1) {
+  if (firstType.value == 1) {
     allFrameNum = (params.endTime - params.startTime) * 25;
   }
 });
@@ -229,9 +246,9 @@ const startSegFn = (e) => {
     frameNum: frameCailNum.value,
     allFrameNum: allFrameNum,
     sourceName: globals.$store.state.curModuleObj.name,
-    type: firstType,
+    type: firstType.value,
     description: e,
-    startTime: startTime,
+    startTime: startTime.value,
   });
 };
 
@@ -329,6 +346,7 @@ const calibrateCamFn = () => {
   @extend .no-select-params;
   @extend .no-wrap-text;
   background-color: #219da6;
+
   &:hover {
     opacity: 0.7;
   }
@@ -354,11 +372,13 @@ const calibrateCamFn = () => {
   justify-content: space-around;
   padding: 0;
 }
+
 .cail_ck-val {
   margin-top: 15px;
   padding-left: 10px;
   color: white;
 }
+
 .small-btn {
   font-size: 12px;
   padding-bottom: 3px;

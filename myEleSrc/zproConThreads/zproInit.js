@@ -19,7 +19,7 @@ parentPort.on('message', async (message) => {
             if (zporCtrlObj === null) {
                 zporCtrlObj = new z2pro.ZproCtrl();
             }
-            let res = await zporCtrlObj.initMyCamera(message.params.val, 24);
+            let res = await zporCtrlObj.initMyCamera(message.params.val, 36);
             if (res == 1) {
                 let camList = zporCtrlObj.getCamList();
                 zporCtrlObj.setSyncCam();

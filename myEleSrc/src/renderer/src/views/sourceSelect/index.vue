@@ -415,7 +415,7 @@ const dealFiles = (data) => {
 };
 
 // 开始分割
-const startItemFile = debounce((val) => {
+const startItemFile = (val) => {
   videoSelectShow.value = true;
   selectType.value = 0;
   isFirstOpen.value = true;
@@ -429,7 +429,7 @@ const startItemFile = debounce((val) => {
     reqType: "/getselectCover",
     sourcePath: val.full_path,
   });
-}, 1000);
+};
 
 // 继续上次操作
 const continue_lastFn = (val) => {
