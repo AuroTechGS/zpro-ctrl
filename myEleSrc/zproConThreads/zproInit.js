@@ -19,27 +19,26 @@ parentPort.on('message', async (message) => {
             if (zporCtrlObj === null) {
                 zporCtrlObj = new z2pro.ZproCtrl();
             }
-            let res = await zporCtrlObj.initMyCamera(message.params.val, 36);
+            let res = await zporCtrlObj.initMyCamera(message.params.val.ipAddr, Number(message.params.val.camNum));
             if (res == 1) {
                 let camList = zporCtrlObj.getCamList();
+                let camInfo = zporCtrlObj.getCaptParamsInfo();
+
                 zporCtrlObj.setSyncCam();
-                // let obj1 = zporCtrlObj.getCaptParamsInfo();
-                // console.log(obj1)
-                parentPort.postMessage({ msgBackInfo: 'init_z2pro',  msg: '操作成功', msgType: 'success', data: camList });
+                parentPort.postMessage({ msgBackInfo: 'init_z2pro',  msg: '操作成功', msgType: 'success', data: { camList: camList, camInfo: camInfo } });
             } else {
                 parentPort.postMessage({ msgBackInfo: 'init_z2pro', msg: res, msgType: 'error' });
             }
         }
         // 发现设备
         if (message.msgInfo === 'refind_z2pro') {
-            let res = await zporCtrlObj.initMyCamera(message.params.val, 24);
+ 
+            let res = await zporCtrlObj.initMyCamera(message.params.val.ipAddr, Number(message.params.val.camNum));
             if (res == 1) {
                 let camList = zporCtrlObj.getCamList();
+                let camInfo = zporCtrlObj.getCaptParamsInfo();
                 zporCtrlObj.setSyncCam();
-                // let obj1 = zporCtrlObj.getCaptParamsInfo();
-                // console.log(obj1)
-
-                parentPort.postMessage({ msgBackInfo: 'refind_z2pro',  msg: '操作成功', msgType: 'success', data: camList });
+                parentPort.postMessage({ msgBackInfo: 'refind_z2pro',  msg: '操作成功', msgType: 'success', data: { camList: camList, camInfo: camInfo } });
             } else {
                 parentPort.postMessage({ msgBackInfo: 'refind_z2pro', msg: res, msgType: 'error' });
             }

@@ -380,13 +380,22 @@ int CameraCtrlBase::setAeMode(int aeType) {
 
 CamearParams CameraCtrlBase::getCameraParams() {
     CamearParams camParams;
-    int resolution = 0, fps = 0, encType = 0, bitrate = 0, aeMode = 0;
+    int resolution = 0, fps = 0, encType = 0, bitrate = 0, aeMode = 0, shutter = 0, isoVal = 0; 
     int res1 = Z_CamArray_Image_Pixel_Get(&resolution);
     int res2 = Z_CamArray_Framerate_Get(&fps);
     int res3 = Z_CamArray_Video_Enc_Type_Get(&encType);
     int res4 = Z_CamArray_Bitrate_Get(&bitrate);
     int res5 = Z_CamArray_AE_Mode_Get(&aeMode);
+    int res6 = Z_CamArray_Shutter_Get(1, &shutter);
+    int res7 = Z_CamArray_ISO_Get(1, &isoVal);
 
-    std::cout << resolution << " - " << fps << " - " << encType << " - " << bitrate << " - " << aeMode << std::endl;
+    std::cout << "res6: " << res6 << " -- " << "shutter: " << shutter << std::endl;
+    camParams.resolution = resolution;
+    camParams.fps = fps;
+    camParams.encType = encType;
+    camParams.bitrate = bitrate;
+    camParams.aeMode = aeMode;
+    camParams.shutter = shutter;
+    camParams.iso = isoVal;
     return camParams;
 }

@@ -2,8 +2,8 @@
   <el-dialog
     :model-value="props.isShow"
     title="请输入要分割的目标物"
-    width="500"
-    height="32%"
+    width="600"
+    height="42%"
     align-center
     @open="open"
     :before-close="handleClose"
@@ -61,7 +61,7 @@ const open = () => {
 .open-process {
   width: 100%;
   height: 100%;
-  padding: 40px 10px 25px;
+  padding: 70px 10px 60px;
   background-color: #cdd0d6;
 }
 </style>

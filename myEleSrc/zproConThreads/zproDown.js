@@ -3,6 +3,8 @@ const async = require('async');
 const ftp = require('basic-ftp');
 const fs = require('fs');
 
+const path = require("path")
+
 let downNum = 0;
 let processTimer = null;
 
@@ -30,8 +32,9 @@ parentPort.on('message', async (message) => {
         if (message.msgInfo === 'down-mp4') {
             if (message.params.ipValList.length) {
                 let dirPath = message.params.downPath;
+                let videoPath = path.join(dirPath, 'original');
                 if (!fs.existsSync(dirPath)) {
-                    fs.mkdirSync(dirPath, { recursive: true });
+                    fs.mkdirSync(videoPath, { recursive: true });
                     let obj = {
                         times: message.params.pathInfo.formatTime,
                         orginFileName: message.params.pathInfo.fileName,
@@ -43,7 +46,7 @@ parentPort.on('message', async (message) => {
                     parentPort.postMessage({ msgBackInfo: 'down-mp4', msgType: 'success', msg: 'mkdir', data: dirPath });
                 }
                 message.params.ipValList.forEach(item => {
-                    item.outUrl = dirPath
+                    item.outUrl = videoPath
                 })
                 let arrTwo = [...message.params.ipValList]
                 downNum = 0;
@@ -73,8 +76,9 @@ parentPort.on('message', async (message) => {
         if (message.msgInfo === 're-down-mp4') {
             if (message.params.ipValList.length) {
                 let downPath = message.params.pathInfo.filePath;
+                let videoPath = path.join(downPath, 'original');
                 message.params.ipValList.forEach(item => {
-                    item.outUrl = downPath
+                    item.outUrl = videoPath
                 })
                 let arrTwo = [...message.params.ipValList]
                 downNum = 0;

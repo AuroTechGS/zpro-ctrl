@@ -1,3 +1,3 @@
-D:\myProgram\newElectron-Cam\node-zprocam-api\src\addonZpro.cc;D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\obj\addonZpro\src\addonZpro.obj
-D:\myProgram\newElectron-Cam\node-zprocam-api\src\main.cpp;D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\obj\addonZpro\src\main.obj
-D:\winApp\nvm\v20.18.1\node_modules\node-gyp\src\win_delay_load_hook.cc;D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\obj\addonZpro\win_delay_load_hook.obj
+D:\myProgram\zpro-ctrl\node-zprocam-api\src\addonZpro.cc;D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\obj\addonZpro\src\addonZpro.obj
+D:\myProgram\zpro-ctrl\node-zprocam-api\src\main.cpp;D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\obj\addonZpro\src\main.obj
+D:\winApp\nvm\v20.18.1\node_modules\node-gyp\src\win_delay_load_hook.cc;D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\obj\addonZpro\win_delay_load_hook.obj

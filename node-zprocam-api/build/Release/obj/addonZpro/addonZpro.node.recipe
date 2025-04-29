@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\addonZpro.node</FullPath>
+      <FullPath>D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\addonZpro.node</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

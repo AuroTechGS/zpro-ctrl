@@ -301,16 +301,57 @@ watch(wsMessage, (newVal) => {
               );
             }
           }
+          if (val.data.length == 3) {
+            if (val.data[2].status === 1) {
+              router.push(`/index/sourceSeg`);
+            } else {
+              let allFrameNum = 0;
+              if (val.data[0].start_frame_time !== null) {
+                selectType.value = 1;
+                startTime.value = Number(val.data[0].start_frame_time);
+                endTime.value = Number(val.data[0].end_frame_time);
+                allFrameNum = Math.floor((endTime.value - startTime.value) * 25);
+              } else {
+                selectType.value = 0;
+                allFrameNum = Number(val.data[0].task_video_time) * 25;
+              }
+              let cailNum = Number(val.data[1].cailbrate_frame_num);
+              let description = val.data[2].task_description;
+              startIndoSegFn(
+                description,
+                cailNum,
+                selectType.value,
+                allFrameNum,
+                startTime.value
+              );
+            }
+          }
         }
       }
     }
-    // 处理完可以清空
+    // 处理完清空
     globals.$store.state.wsMessage = null;
   }
 });
 
+const startIndoSegFn = (description, frameNum, type, allFrameNum, startTime) => {
+  globals.$store.state.isFullScreenLoading = true;
+  globals.$store.state.fullScreenloadingText = "目标分割处理中， 请稍等...";
+  sendWs({
+    reqType: "/startFrameSegment",
+    sourcePath: curVideoObj.full_path,
+    frameNum: frameNum,
+    allFrameNum: allFrameNum,
+    sourceName: curVideoObj.name,
+    type: type,
+    description: description,
+    startTime: startTime,
+  });
+};
+
 // 生命周期钩子
 onMounted(async () => {
+  globals.$store.state.isImagesSeg = false;
   createWS();
   globals.$store.state.fullScreenloadingText = "正在获取我的资源中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
@@ -393,7 +434,7 @@ const startSplitVideo = debounce(() => {
   }
   globals.$store.state.curModuleObj = curVideoObj;
   router.push(
-    `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&endTime=${endTime.value}&others=0`
+    `/index/calibrateCam?sourname=${curVideoObj.name}&type=${selectType.value}&startTime=${startTime.value}&videoTime=${curShowVideoTime.value}&endTime=${endTime.value}&others=0`
   );
 }, 1000);
 

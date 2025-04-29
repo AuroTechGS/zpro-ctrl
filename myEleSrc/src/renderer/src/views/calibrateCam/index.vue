@@ -102,7 +102,6 @@ watch(wsMessage, (newVal) => {
         console.log(val);
         // splitProcess.value = Math.floor(splitProcess.value + 25);
       }
-
       if (val.repType == "/startSplitVideoFrame" && val.state === 200) {
         if (val.data === "success") {
           splitProcess.value = 100;
@@ -192,6 +191,7 @@ onMounted(async () => {
       type: params.type,
       startTime: params.startTime,
       endTime: params.endTime,
+      videoAllTime: params.videoTime,
       sourceName: globals.$store.state.curModuleObj.name,
     });
   }

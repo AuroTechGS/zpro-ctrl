@@ -172,6 +172,8 @@ public:
     camObj.Set("encType", Napi::Number::New(env, result.encType));
     camObj.Set("bitrate", Napi::Number::New(env, result.bitrate));
     camObj.Set("aeMode", Napi::Number::New(env, result.aeMode));
+    camObj.Set("iso", Napi::Number::New(env, result.iso));
+    camObj.Set("shutter", Napi::Number::New(env, result.shutter));
     return camObj;
   };
   

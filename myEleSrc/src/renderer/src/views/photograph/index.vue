@@ -406,7 +406,6 @@ import { sleep } from "../../assets/js/untils";
 import moment from "moment";
 const globals = getCurrentInstance().appContext.config.globalProperties;
 
-
 let leftWidth = ref(285);
 let rightCaptGatherBox = ref(null);
 let leftCaptureBox = ref(null);
@@ -600,7 +599,6 @@ onMounted(async () => {
 
 const clickHandler = () => {
   camItemMenusShow.value = false;
-  projectFileObj = reactive({});
 };
 
 onUnmounted(() => {
@@ -650,13 +648,6 @@ const updataConfigJsonfn = async () => {
   for (let key in eleDataCapListMgs.data) {
     z2proConfigJSON[key] = eleDataCapListMgs.data[key];
   }
-  resolutionCam.value = z2proConfigJSON.resolutionCam; // 分辨率
-  fpsValue.value = z2proConfigJSON.fps; // 帧率
-  bitrateValue.value = z2proConfigJSON.bitrate; // 码率
-  shutterValue.value = z2proConfigJSON.shutter; // 快门速度
-  aeModelValue.value = z2proConfigJSON.aeMode; // 曝光模式
-  encCodeValue.value = z2proConfigJSON.necType; // 编码格式
-  isoValue.value = z2proConfigJSON.ISOValue; // 曝光增益
 };
 
 const testPhotoFn = () => {
@@ -675,6 +666,7 @@ const getCamSyncStatus = () => {
       if (message.data === 1) {
         syncStatus.value = true;
         syncTips.close();
+        syncTips = null;
         window.electron.ipcRenderer.removeAllListeners("worker-sync-status");
         if (camSyncTimer) {
           clearInterval(camSyncTimer);
@@ -730,9 +722,11 @@ const projectRmFn = () => {
     .then(() => {
       globals.$store.state.fullScreenloadingText = "项目正在删除中，请稍等...";
       globals.$store.state.isFullScreenLoading = true;
-      window.electron.ipcRenderer.send("rmProjectFilesApi", {
+
+      let obj = {
         rmPath: projectFileObj.filePath,
-      });
+      };
+      window.electron.ipcRenderer.send("rmProjectFilesApi", obj);
       window.electron.ipcRenderer.once("project-rm-back", async (e, msg) => {
         globals.$store.state.isFullScreenLoading = false;
         await sleep(1000);
@@ -800,6 +794,7 @@ const z2proRebootFn = async () => {
   syncStatus.value = true;
   if (syncTips) {
     syncTips.close();
+    syncTips = null;
   }
   if (camSyncTimer) {
     clearInterval(camSyncTimer);
@@ -863,17 +858,12 @@ const initZ2proDataAndCamzList = async () => {
   for (let key in eleDataCapListMgs.data) {
     z2proConfigJSON[key] = eleDataCapListMgs.data[key];
   }
-  resolutionCam.value = z2proConfigJSON.resolutionCam; // 分辨率
-  fpsValue.value = z2proConfigJSON.fps; // 帧率
-  bitrateValue.value = z2proConfigJSON.bitrate; // 码率
-  shutterValue.value = z2proConfigJSON.shutter; // 快门速度
-  aeModelValue.value = z2proConfigJSON.aeMode; // 曝光模式
-  encCodeValue.value = z2proConfigJSON.necType; // 编码格式
-  isoValue.value = z2proConfigJSON.ISOValue; // 曝光增益
-
   captureTreeData.value = [];
   getFileListFn(z2proConfigJSON.z2proDownPath);
-  await window.electron.ipcRenderer.send("z2proInitEleApi", z2proConfigJSON.ipAddr);
+  await window.electron.ipcRenderer.send("z2proInitEleApi", {
+    ipAddr: z2proConfigJSON.ipAddr,
+    camNum: z2proConfigJSON.camNum,
+  });
   window.electron.ipcRenderer.once("worker-message", (event, message) => {
     if (message.msgType === "error") {
       ElMessage({
@@ -887,7 +877,7 @@ const initZ2proDataAndCamzList = async () => {
       globals.$store.state.isFullScreenLoading = false;
       return;
     }
-    if (message.msgType === "success" && message.data.length === 0) {
+    if (message.msgType === "success" && message.data.camList.length === 0) {
       ElMessage({
         message: "相机已初始化,检测到相机数量为0,请检查相机连接是否正常",
         type: "error",
@@ -899,14 +889,21 @@ const initZ2proDataAndCamzList = async () => {
       globals.$store.state.isFullScreenLoading = false;
       return;
     }
-    if (message.msgType === "success" && message.data.length > 0) {
-      message.data.forEach((item, index) => {
+    if (message.msgType === "success" && message.data.camList.length > 0) {
+      message.data.camList.forEach((item, index) => {
         (item.sort = index + 1),
           (item.isConnect = item.onlineStatus === 1 ? true : false);
       });
+      resolutionCam.value = message.data.camInfo.resolution; // 分辨率
+      fpsValue.value = message.data.camInfo.fps; // 帧率
+      bitrateValue.value = message.data.camInfo.bitrate; // 码率
+      shutterValue.value = message.data.camInfo.shutter; // 快门速度
+      aeModelValue.value = message.data.camInfo.aeMode; // 曝光模式
+      encCodeValue.value = message.data.camInfo.encType; // 编码格式
+      isoValue.value = message.data.camInfo.iso; // 曝光增益
 
-      captureTreeData.value = message.data;
-      onLineCamList = message.data.filter((item) => item.onlineStatus === 1);
+      captureTreeData.value = message.data.camList;
+      onLineCamList = message.data.camList.filter((item) => item.onlineStatus === 1);
       globals.$store.state.isFullScreenLoading = false;
       getTFInfoFn(); // 获取TF卡信息
       startZ2proCapture(); // 开始预览
@@ -920,6 +917,10 @@ const startZ2proCapture = async () => {
   let onlineCam = captureTreeData.value.filter((item) => item.isConnect);
   if (!onlineCam.length) return;
   syncStatus.value = false;
+  if (syncTips) {
+    syncTips.close();
+    syncTips = null;
+  }
   syncTips = ElNotification.error({
     title: "警告",
     message: "相机同步中，预计1-5分钟, 未同步不可拍摄，以相机列表右上角同步状态为准",
@@ -970,7 +971,10 @@ const captureZ2proFindFn = async () => {
   }
   await window.electron.ipcRenderer.invoke("stopZ2proAllRtspApi");
   if (z2proConfigJSON) {
-    window.electron.ipcRenderer.send("z2proRefindEleApi", z2proConfigJSON.ipAddr);
+    window.electron.ipcRenderer.send("z2proRefindEleApi", {
+      ipAddr: z2proConfigJSON.ipAddr,
+      camNum: z2proConfigJSON.camNum,
+    });
     window.electron.ipcRenderer.once("worker-refind", (event, message) => {
       if (message.msgType === "error") {
         ElMessage({
@@ -984,12 +988,11 @@ const captureZ2proFindFn = async () => {
         globals.$store.state.isFullScreenLoading = false;
         return;
       }
-      if (message.msgType === "success" && message.data.length === 0) {
+      if (message.msgType === "success" && message.data.camList.length === 0) {
         ElMessage({
           message: "相机已初始化,检测到相机数量为0,请检查相机连接是否正常",
           type: "error",
           grouping: true,
-
           plain: true,
           showClose: true,
           offset: 75,
@@ -997,13 +1000,20 @@ const captureZ2proFindFn = async () => {
         globals.$store.state.isFullScreenLoading = false;
         return;
       }
-      if (message.msgType === "success" && message.data.length > 0) {
-        message.data.forEach((item, index) => {
+      if (message.msgType === "success" && message.data.camList.length > 0) {
+        message.data.camList.forEach((item, index) => {
           (item.sort = index + 1),
             (item.isConnect = item.onlineStatus === 1 ? true : false);
         });
-        captureTreeData.value = message.data;
-        onLineCamList = message.data.filter((item) => item.onlineStatus === 1);
+        resolutionCam.value = message.data.camInfo.resolution; // 分辨率
+        fpsValue.value = message.data.camInfo.fps; // 帧率
+        bitrateValue.value = message.data.camInfo.bitrate; // 码率
+        shutterValue.value = message.data.camInfo.shutter; // 快门速度
+        aeModelValue.value = message.data.camInfo.aeMode; // 曝光模式
+        encCodeValue.value = message.data.camInfo.encType; // 编码格式
+        isoValue.value = message.data.camInfo.iso; // 曝光增益
+        captureTreeData.value = message.data.camList;
+        onLineCamList = message.data.camList.filter((item) => item.onlineStatus === 1);
         globals.$store.state.isFullScreenLoading = false;
         startZ2proCapture();
       }
@@ -1118,11 +1128,6 @@ const encCodeChangeFn = async (val) => {
     await sleep(1000);
     if (message.msgType === "success") {
       z2proConfigJSON.necType = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
       ElMessage({
         message: "操作成功",
         type: "success",
@@ -1156,11 +1161,6 @@ const alignModelChangeFn = async (val) => {
     await sleep(1000);
     if (message.msgType === "success") {
       z2proConfigJSON.resolutionCam = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
       ElMessage({
         message: "操作成功",
         type: "success",
@@ -1190,11 +1190,6 @@ const aeTypeChangeFn = async (val) => {
   window.electron.ipcRenderer.once("worker-aemode", async (event, message) => {
     if (message.msgType === "success") {
       z2proConfigJSON.aeMode = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
     } else {
       aeModelValue.value = z2proConfigJSON.aeMode;
       ElMessage({
@@ -1220,11 +1215,6 @@ const camFpsChangeFn = async (val) => {
     await sleep(1000);
     if (message.msgType === "success") {
       z2proConfigJSON.fps = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
       ElMessage({
         message: "操作成功",
         type: "success",
@@ -1257,11 +1247,6 @@ const camBitrateChangeFn = async (val) => {
     await sleep(1000);
     if (message.msgType === "success") {
       z2proConfigJSON.bitrate = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
       ElMessage({
         message: "操作成功",
         type: "success",
@@ -1290,11 +1275,6 @@ const camShutterChangeFn = async (val) => {
   window.electron.ipcRenderer.once("worker-shutter", async (event, message) => {
     if (message.msgType === "success") {
       z2proConfigJSON.shutter = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
     } else {
       shutterValue.value = z2proConfigJSON.shutter;
       ElMessage({
@@ -1316,11 +1296,6 @@ const camISOChangeFn = async (val) => {
   window.electron.ipcRenderer.once("worker-iso", async (event, message) => {
     if (message.msgType === "success") {
       z2proConfigJSON.ISOValue = val;
-      let obj = {};
-      for (let key in z2proConfigJSON) {
-        obj[key] = z2proConfigJSON[key];
-      }
-      window.electron.ipcRenderer.invoke("updateJsonConfig", obj);
       ElMessage({
         message: "操作成功",
         type: "success",
@@ -1590,6 +1565,16 @@ const bigShowcloseFn = async () => {
 
 // zpro开始拍摄事件
 const setGatherStatusFn = async () => {
+  if (!syncStatus) {
+    return ElMessage({
+      message: "相机未同步，不容许拍摄，请等待同步后再拍摄",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+  }
   isGather.value = true;
   let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
   if (!isExistOpenCapture.length) {
@@ -1740,6 +1725,7 @@ const openCurFile = (item) => {
   background-color: #fff;
   overflow: hidden;
 }
+
 .set-left-menus {
   height: 100%;
   width: 175px;
@@ -1858,6 +1844,7 @@ const openCurFile = (item) => {
     border-bottom: 1px solid #108085;
     overflow: hidden;
     height: 55%;
+
     .list-box {
       height: calc(100% - 27px);
 

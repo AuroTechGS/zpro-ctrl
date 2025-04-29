@@ -1,5 +1,6 @@
 {
     "ipAddr": "192.168.7",
+    "camNum": "32",
     "z2proDownPath": "video_view",
     "resolutionCam": 3,
     "fps": 25,

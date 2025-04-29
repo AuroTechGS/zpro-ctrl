@@ -1,9 +1,9 @@
-^D:\MYPROGRAM\NEWELECTRON-CAM\NODE-ZPROCAM-API\SRC\Z_CAMARRAY_SDK.DLL
-call mkdir "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\Z_CamArray_SDK.dll" "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\Z_CamArray_SDK.dll"
+^D:\MYPROGRAM\ZPRO-CTRL\NODE-ZPROCAM-API\SRC\Z_CAMARRAY_SDK.DLL
+call mkdir "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\Z_CamArray_SDK.dll" "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\Z_CamArray_SDK.dll"
 if %errorlevel% neq 0 exit /b %errorlevel%
-^D:\MYPROGRAM\NEWELECTRON-CAM\NODE-ZPROCAM-API\SRC\Z_CONTROL_SDK.DLL
-call mkdir "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\Z_Control_SDK.dll" "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\Z_Control_SDK.dll"
+^D:\MYPROGRAM\ZPRO-CTRL\NODE-ZPROCAM-API\SRC\Z_CONTROL_SDK.DLL
+call mkdir "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\Z_Control_SDK.dll" "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\Z_Control_SDK.dll"
 if %errorlevel% neq 0 exit /b %errorlevel%
-^D:\MYPROGRAM\NEWELECTRON-CAM\NODE-ZPROCAM-API\SRC\CONFIG\Z2PROCONFIG.JSON
-call mkdir "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\config\z2proConfig.json" "D:\myProgram\newElectron-Cam\node-zprocam-api\build\Release\z2proConfig.json"
+^D:\MYPROGRAM\ZPRO-CTRL\NODE-ZPROCAM-API\SRC\CONFIG\Z2PROCONFIG.JSON
+call mkdir "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\" 2>nul & set ERRORLEVEL=0 & copy /Y "..\src\config\z2proConfig.json" "D:\myProgram\zpro-ctrl\node-zprocam-api\build\Release\z2proConfig.json"
 if %errorlevel% neq 0 exit /b %errorlevel%

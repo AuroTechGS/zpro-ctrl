@@ -579,7 +579,8 @@ ipcMain.on('z2proDownMp4EleApi', async (event, val) => {
     }
     let downPath = val.downPath.indexOf('\\') === -1 ? path.resolve(__dirname, `../../${val.downPath}`) : val.downPath;
     let curTime = moment().format('YYYY-MM-DD_HH-mm-ss');
-    let dirPath = path.join(downPath, `/${curTime}`);
+    let fileName = curTime.replaceAll('-', '').replace('_', '')
+    let dirPath = path.join(downPath, `/${fileName}`);
 
     let arr = []
     val.camList.forEach(item => {
@@ -756,7 +757,6 @@ function startHLSStreams(cameras, width, height, frameRate) {
           data: data
         });
       }
-
     });
     ffmpeg.stderr.on('data', (data) => {
     });
@@ -1092,6 +1092,7 @@ ipcMain.on('reDownProjectFilesApi', (event, val) => {
         pathInfo: val.lastProjectObj
       }
     }
+    console.log(messageParams)
     downWorker.postMessage(messageParams);
   } catch (err) {
     console.log(err)
