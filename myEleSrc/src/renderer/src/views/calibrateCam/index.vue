@@ -144,7 +144,7 @@ watch(wsMessage, (newVal) => {
       }
       if (val.repType == "/startFrameSegment" && val.state === 200) {
         globals.$store.state.isFullScreenLoading = false;
-        console.log(val);
+        router.push(`/index/sourceSeg`);
       }
     }
     globals.$store.state.wsMessage = null;

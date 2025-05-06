@@ -34,6 +34,7 @@ public:
         InstanceMethod("setCamsEnc", &ZproCtrl::setCamsEnc),
         InstanceMethod("setCamsAeMode", &ZproCtrl::setCamsAeMode),
         InstanceMethod("getCaptParamsInfo", &ZproCtrl::getCaptParamsInfo),
+        InstanceMethod("startCamAWB", &ZproCtrl::startCamAWB),
     });
     constructor = Napi::Persistent(func);
     constructor.SuppressDestruct();
@@ -136,6 +137,12 @@ public:
   {
     Napi::Env env = info.Env();
     int result = this->startSnap();
+    return Napi::Number::New(env, result);
+  };
+  Napi::Value startCamAWB(const Napi::CallbackInfo &info)
+  {
+    Napi::Env env = info.Env();
+    int result = this->setAWB();
     return Napi::Number::New(env, result);
   };
   Napi::Value startCamshoot(const Napi::CallbackInfo &info)

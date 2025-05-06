@@ -29,72 +29,9 @@ let OBcPluseModel = null;
 let thread_list = []
 
 let mainWindow;
-let appShow = true;
 
 let waitDownMp4List = [];
 let segImgWorker = null;
-
-class AzCustomWindowMove {
-  constructor() {
-    this.isOpen = false;  // 是否开启拖拽
-    this.win = null;  // 窗口对象
-    this.winStartPosition = { x: 0, y: 0, width: 0, height: 0 };  // 窗口初始位置
-    this.startPosition = { x: 0, y: 0 };  // 鼠标初始位置
-    this.lastPosition = { x: 0, y: 0 };  // 上一帧的位置
-  }
-
-  init(win) {
-    this.win = win;
-  }
-
-  start() {
-    this.isOpen = true;
-    // 获取当前窗口的偏移
-    const [winX, winY] = this.win.getPosition();
-    const [winWidth, winHeight] = this.win.getSize();
-    this.winStartPosition.x = winX;
-    this.winStartPosition.y = winY;
-    this.winStartPosition.width = winWidth;
-    this.winStartPosition.height = winHeight;
-
-    // 获取当前鼠标位置
-    const mouseStartPosition = screen.getCursorScreenPoint();
-    this.startPosition.x = mouseStartPosition.x;
-    this.startPosition.y = mouseStartPosition.y;
-    this.move();
-  }
-
-  move() {
-    if (!this.isOpen || !this.win || this.win.isDestroyed()) {
-      return;
-    }
-    const cursorPosition = screen.getCursorScreenPoint();
-    const dx = cursorPosition.x - this.startPosition.x;  // 鼠标在 X 轴的偏移
-    const dy = cursorPosition.y - this.startPosition.y;  // 鼠标在 Y 轴的偏移
-
-    const newX = this.winStartPosition.x + dx;
-    const newY = this.winStartPosition.y + dy;
-
-    this.win.setBounds({
-      x: newX,
-      y: newY,
-      width: this.winStartPosition.width,
-      height: this.winStartPosition.height,
-    });
-
-    this.lastPosition.x = cursorPosition.x;
-    this.lastPosition.y = cursorPosition.y;
-    if (this.isOpen) {
-      setImmediate(() => this.move());
-    }
-  }
-
-  end() {
-    this.isOpen = false;
-  }
-}
-
-let customWindowMove = new AzCustomWindowMove();
 // 每隔1秒检查主进程是否有更新
 
 
@@ -132,19 +69,11 @@ function createWindow() {
   mainWindow.on('closed', () => {
     stopHLSStreams();
   })
-
-  mainWindow.on('minimize', () => {
-    appShow = false;
-  });
-  mainWindow.on('restore', () => {
-    appShow = true;
-  });
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  customWindowMove.init(mainWindow);  // 传入你的窗口对象
 }
 
 
@@ -161,15 +90,11 @@ app.whenReady().then(() => {
 })
 
 
-
 ipcMain.handle('ObInitMain', async (_e) => {
   let nodePath = process.env.NODE_ENV === 'development' ? '../../../node-addon-api/build/Release/addon.node' : '';
   OBcPluseModel = require(nodePath)
   try {
     let data = OBcPluseModel.loadConfigFile('D:/myProgram/newElectron-Cam/node-addon-api/src/config/OBsync.json')
-    setTimeout(() => {
-      customWindowMove.end();
-    }, 50);
     if (data.status == -1) {
       return { msg: '读取或解析 JSON 时出错', msgType: 'error' };
     }
@@ -199,9 +124,6 @@ ipcMain.handle('eleApiOpenAllCam', async (_e) => {
   if (OBcPluseModel) {
     try {
       let data = await OBcPluseModel.openAllDeviceApi()
-      setTimeout(() => {
-        customWindowMove.end();
-      }, 50);
       if (data.status != 1) {
         return { msg: '所有相机连接失败, 请检查相机是否正确连接', msgType: 'error' };
       } else {
@@ -220,9 +142,6 @@ ipcMain.handle('eleApiOpenSingleCam', async (_e, val) => {
   if (OBcPluseModel) {
     try {
       let isSuccess = await OBcPluseModel.openDeviceApi(val)
-      setTimeout(() => {
-        customWindowMove.end();
-      }, 50);
       if (isSuccess) {
         return { msg: '连接成功', msgType: 'success' };
       } else {
@@ -242,9 +161,6 @@ ipcMain.handle('eleApiStartCap', async (_e) => {
   if (OBcPluseModel) {
     try {
       let data = await OBcPluseModel.startCaptureApi()
-      setTimeout(() => {
-        customWindowMove.end();
-      }, 50);
       if (data.status != 1) {
         return { msg: '相机连接错误, 请检查相机是否正确连接', msgType: 'error' };
       } else {
@@ -262,9 +178,6 @@ ipcMain.handle('eleApiCloseOBSingleCam', async (_e, val) => {
   if (OBcPluseModel) {
     try {
       let isSuccess = await OBcPluseModel.closeSingleDeviceApi(val)
-      setTimeout(() => {
-        customWindowMove.end();
-      }, 50);
       if (isSuccess) {
         return { msg: '操作成功', msgType: 'success' };
       } else {
@@ -347,18 +260,6 @@ app.on('window-all-closed', () => {
 })
 
 
-// 通信监听
-ipcMain.handle("Main_Window_Operate", (event, type) => {
-  if (type === 'mouse_d') {
-    customWindowMove.start()
-  }
-  if (type === 'mouse_u') {
-    customWindowMove.end()
-  }
-  return 1
-})
-
-
 
 /** 接收渲染进程 操作窗口 的通知  关闭、最大化、最小化、最大化还原
  * @param {Object} event
@@ -366,7 +267,6 @@ ipcMain.handle("Main_Window_Operate", (event, type) => {
  */
 ipcMain.on('operationWindow', (event, operationType) => {
   if (!mainWindow) return;
-  appShow = true;
   switch (operationType) {
     case 'max'://窗口 最大化
       mainWindow.maximize();
@@ -375,7 +275,6 @@ ipcMain.on('operationWindow', (event, operationType) => {
       mainWindow.unmaximize();
       break;
     case 'min'://窗口 最小化
-      appShow = false
       mainWindow.minimize();
       break;
     case 'close'://窗口 关闭
@@ -509,6 +408,10 @@ function createdThreads() {
     // ae
     if (message.msgBackInfo === 'z2pro_set_aemode') {
       mainWindow.webContents.send('worker-aemode', message);
+    }
+    // 自动白平衡
+    if (message.msgBackInfo === 'z2pro_set_AWB') {
+      mainWindow.webContents.send('worker-awb', message);
     }
   });
 }
@@ -751,7 +654,7 @@ function startHLSStreams(cameras, width, height, frameRate) {
     // 启动 FFmpeg
     thread_list.push(ffmpeg)
     ffmpeg.stdout.on('data', (data) => {
-      if (appShow && !mainWindow.isDestroyed()) {
+      if (isWindowActive(mainWindow)) {
         mainWindow.webContents.send(`rtsp-message-${item}`, {
           camIp: item,
           data: data
@@ -766,6 +669,11 @@ function startHLSStreams(cameras, width, height, frameRate) {
       // });
     });
   });
+}
+
+function isWindowActive(win) {
+  if (!win || win.isDestroyed() && w.webContents.getURL()) return false;
+  return win.isVisible() && !win.isMinimized() && !win.webContents.isDestroyed();
 }
 
 
@@ -842,6 +750,7 @@ ipcMain.handle('startZ2proSingleCam', async (event, val) => {
 
 // 获取相机同步结果
 ipcMain.on('getZ2proSyncStatusApi', async (event) => {
+  console.log('getZ2proSyncStatusApi')
   try {
     if (worker) {
       let messageParams = {
@@ -997,6 +906,21 @@ ipcMain.on('setCamAeModelApi', async (event, val) => {
   }
 })
 
+// 设置曝光模式
+ipcMain.on('setCamAWBApi', async (event) => {
+  try {
+    if (worker) {
+      let messageParams = {
+        msgInfo: 'z2pro_set_AWB'
+      }
+      worker.postMessage(messageParams);
+    }
+  } catch (error) {
+    return `Failed to load @electron/fix-path:${error}`
+  }
+})
+
+
 
 
 
@@ -1051,6 +975,8 @@ ipcMain.handle('updateJsonConfig', (event, val) => {
     return `Failed to load @electron/fix-path:${error}`
   }
 })
+
+
 
 
 // 项目文件删除

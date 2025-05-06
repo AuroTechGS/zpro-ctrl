@@ -64,7 +64,7 @@ parentPort.on('message', async (message) => {
         // 格式化TF卡
         if (message.msgInfo === 'z2pro_format_tf') {
             let res = await zporCtrlObj.setCamFormatTf();
-            await sleep(5000);
+            await sleep(8000);
             if (res == 0) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_format_tf', msg: '操作成功', msgType: 'success' });
             }  else {
@@ -109,18 +109,28 @@ parentPort.on('message', async (message) => {
         }
         // 设置相机分辨率
         if (message.msgInfo === 'z2pro_set_resoluton') {
-            let res = await zporCtrlObj.setCamResolutionRate(message.params.resoluton);
-            await sleep(15000);
+            let res = -1;
+            while(res !== 1) {
+                res = await zporCtrlObj.setCamResolutionRate(message.params.resoluton);
+                if (res !== 1) {
+                    await sleep(8000);
+                }
+            }
             if (res === 1) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_resoluton', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_resoluton', msg: 'error'})
             }
         }
-        // 设置相机分辨率
+        // 设置相机帧率
         if (message.msgInfo === 'z2pro_set_fps') {
-            let res = await zporCtrlObj.setCamFrameRate(message.params.resoluton);
-            await sleep(15000);
+            let res = -1;
+            while(res !== 1) {
+                res = await zporCtrlObj.setCamFrameRate(message.params.resoluton);
+                if (res !== 1) {
+                    await sleep(8000);
+                }
+            }
             if (res === 1) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_fps', msg: '操作成功', msgType: 'success', data: res });
             }  else {
@@ -129,8 +139,13 @@ parentPort.on('message', async (message) => {
         }
         // 设置相机码率
         if (message.msgInfo === 'z2pro_set_bitrate') {
-            let res = await zporCtrlObj.setCamsBit(message.params.resoluton);
-            await sleep(15000);
+            let res = -1;
+            while(res !== 1) {
+                res = await zporCtrlObj.setCamsBit(message.params.resoluton);
+                if (res !== 1) {
+                    await sleep(8000);
+                }
+            }
             if (res === 1) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_bitrate', msg: '操作成功', msgType: 'success', data: res });
             }  else {
@@ -139,17 +154,28 @@ parentPort.on('message', async (message) => {
         }
         // 设置编码方式
         if (message.msgInfo === 'z2pro_set_enc') {
-            let res = await zporCtrlObj.setCamsEnc(message.params.resoluton);
-            await sleep(15000);
+            let res = -1;
+            while(res !== 1) {
+                res = await zporCtrlObj.setCamsEnc(message.params.resoluton);
+                if (res !== 1) {
+                    await sleep(8000);
+                }
+            }
             if (res === 1) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_enc', msg: '操作成功', msgType: 'success', data: res });
-            }  else {
+            } else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_enc', msg: 'error'})
             }
         }
         // 设置曝光模式
         if (message.msgInfo === 'z2pro_set_aemode') {
             let res = await zporCtrlObj.setCamsAeMode(message.params.resoluton);
+            while(res !== 1) {
+                res = await zporCtrlObj.setCamsAeMode(message.params.resoluton);
+                if (res !== 1) {
+                    await sleep(1000);
+                }
+            }
             if (res === 1) {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_aemode', msg: '操作成功', msgType: 'success', data: res });
             }  else {
@@ -172,6 +198,21 @@ parentPort.on('message', async (message) => {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_iso', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_iso', msg: 'error'})
+            }
+        }
+        // 设置自动白平衡
+        if (message.msgInfo === 'z2pro_set_AWB') {
+            let res = -1;
+            while(res !== 1) {
+                res = await zporCtrlObj.startCamAWB();
+                if (res !== 1) {
+                    await sleep(8000);
+                }
+            }
+            if (res === 1) {
+                parentPort.postMessage({ msgBackInfo: 'z2pro_set_AWB', msg: '操作成功', msgType: 'success', data: res });
+            }  else {
+                parentPort.postMessage({msgBackInfo: 'z2pro_set_AWB', msg: 'error'})
             }
         }
     } catch (error) {

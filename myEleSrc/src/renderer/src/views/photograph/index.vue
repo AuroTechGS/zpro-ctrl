@@ -27,7 +27,14 @@
             <span class="cam-list-status">状态</span>
           </li>
           <ul class="cam-list-ul" data-simplebar>
-            <li class="cam-list-item" v-for="(item, index) in captureTreeData">
+            <li
+              class="cam-list-item"
+              v-for="(item, index) in captureTreeData"
+              @dblclick="bigShowCurData(item, 'camlist')"
+              :class="[
+                item.ipAddr === curBigShowVideosObj.camIp ? 'menu-show-native' : '',
+              ]"
+            >
               <span
                 class="cam-list-sort"
                 :class="[item.isConnect ? 'capture-name-Connected' : '']"
@@ -132,7 +139,7 @@
               />
             </el-select>
           </div>
-          <div class="config-item" style="margin-right: 4%">
+          <!-- <div class="config-item" style="margin-right: 4%">
             <span>曝光模式:</span>
             <el-select
               v-model="aeModelValue"
@@ -149,7 +156,7 @@
                 :value="item.value"
               />
             </el-select>
-          </div>
+          </div> -->
           <div class="config-item" style="margin-right: 4%">
             <span>快门速度:</span>
             <el-select
@@ -186,6 +193,13 @@
               />
             </el-select>
           </div>
+          <div
+            class="zpro-set-btn"
+            style="color: white; padding: 6px 11px"
+            @click="awbChangeFn"
+          >
+            设置自动白平衡
+          </div>
         </div>
         <!-- 其他相机配置项 -->
         <div
@@ -213,7 +227,7 @@
               class="show-item-box"
               :style="{ width: `${minBoxHeight}px`, height: `${minBoxHeight}px` }"
               :key="index"
-              @dblclick="bigShowCurData(item)"
+              @dblclick="bigShowCurData(item, 'view')"
             >
               <canvas :id="'video' + index"></canvas>
             </li>
@@ -411,9 +425,9 @@ let rightCaptGatherBox = ref(null);
 let leftCaptureBox = ref(null);
 let showImgBox = ref(null);
 
-let resolutionCam = ref(3);
-let fpsValue = ref(25);
-let bitrateValue = ref(50);
+let resolutionCam = ref(-1);
+let fpsValue = ref(-1);
+let bitrateValue = ref(-1);
 let gatherTimeValue = ref(10000);
 
 let curOnceGatherTime = ref(0);
@@ -432,14 +446,16 @@ let tfInfo = reactive({
   all: 0,
 });
 
-let encCodeValue = ref(2);
+let encCodeValue = ref(-1);
 
 let encCodeOpts = reactive([
+  { label: "混乱", value: -1 },
   { label: "h264", value: 1 },
   { label: "h265", value: 2 },
 ]);
 
 let alignModelOpts = reactive([
+  { label: "混乱", value: -1 },
   { label: "2k", value: 2 },
   { label: "4k", value: 3 },
 ]);
@@ -458,16 +474,16 @@ let z2proConfigJSON = reactive({});
 // 相机列表
 let captureTreeData = ref([]);
 
-let timerPro = null;
-
 let myTimers = null;
 let fpsOpts = reactive([
+  { label: "混乱", value: -1 },
   { label: "25", value: 25 },
   { label: "50", value: 50 },
 ]);
 
 // 深度图尺寸配置
 let bitrateOpts = reactive([
+  { label: "混乱", value: -1 },
   { label: "20(Mbps)", value: 20 },
   { label: "30(Mbps)", value: 30 },
   { label: "40(Mbps)", value: 40 },
@@ -484,12 +500,7 @@ let bitrateOpts = reactive([
   { label: "200(Mbps)", value: 200 },
 ]);
 
-let aeModelOpts = reactive([
-  { label: "自动", value: 1 },
-  { label: "手动", value: 2 },
-]);
-
-let aeModelValue = ref(2);
+let aeModelValue = ref(-1);
 let shutterValue = ref(75);
 let isoValue = ref(100);
 
@@ -658,20 +669,22 @@ const testPhotoFn = () => {
 };
 
 const getCamSyncStatus = () => {
-  camSyncTimer = setInterval(() => {
-    window.electron.ipcRenderer.send("getZ2proSyncStatusApi");
-  }, 1000 * 8);
+  aeTypeChangeFn();
+  window.electron.ipcRenderer.send("getZ2proSyncStatusApi");
   window.electron.ipcRenderer.on("worker-sync-status", (event, message) => {
     if (message.msgType === "success") {
       if (message.data === 1) {
         syncStatus.value = true;
-        syncTips.close();
-        syncTips = null;
-        window.electron.ipcRenderer.removeAllListeners("worker-sync-status");
-        if (camSyncTimer) {
-          clearInterval(camSyncTimer);
+        if (syncTips) {
+          syncTips.close();
+          syncTips = null;
         }
+        window.electron.ipcRenderer.removeAllListeners("worker-sync-status");
       }
+    } else {
+      setTimeout(() => {
+        window.electron.ipcRenderer.send("getZ2proSyncStatusApi");
+      }, 10000);
     }
   });
 };
@@ -704,6 +717,7 @@ const reDownLoadFn = () => {
   for (let key in projectFileObj) {
     obj[key] = projectFileObj[key];
   }
+  projectFileObj = reactive({});
   window.electron.ipcRenderer.send("reDownProjectFilesApi", {
     lastProjectObj: obj,
     ipValList: onlineCams.map((item) => item.ipAddr),
@@ -722,10 +736,10 @@ const projectRmFn = () => {
     .then(() => {
       globals.$store.state.fullScreenloadingText = "项目正在删除中，请稍等...";
       globals.$store.state.isFullScreenLoading = true;
-
       let obj = {
         rmPath: projectFileObj.filePath,
       };
+      projectFileObj = reactive({});
       window.electron.ipcRenderer.send("rmProjectFilesApi", obj);
       window.electron.ipcRenderer.once("project-rm-back", async (e, msg) => {
         globals.$store.state.isFullScreenLoading = false;
@@ -791,7 +805,7 @@ const z2proRebootFn = async () => {
   globals.$store.state.fullScreenloadingText = "相机重启中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   isBigShowVideos.value = false;
-  syncStatus.value = true;
+  syncStatus.value = false;
   if (syncTips) {
     syncTips.close();
     syncTips = null;
@@ -894,6 +908,7 @@ const initZ2proDataAndCamzList = async () => {
         (item.sort = index + 1),
           (item.isConnect = item.onlineStatus === 1 ? true : false);
       });
+      console.log(message.data.camInfo);
       resolutionCam.value = message.data.camInfo.resolution; // 分辨率
       fpsValue.value = message.data.camInfo.fps; // 帧率
       bitrateValue.value = message.data.camInfo.bitrate; // 码率
@@ -964,6 +979,7 @@ const captureZ2proFindFn = async () => {
   globals.$store.state.fullScreenloadingText = "相机检索中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   isBigShowVideos.value = false;
+  syncStatus.value = false;
   if (captureTreeData.value.length) {
     captureTreeData.value.forEach((item) => {
       window.electron.ipcRenderer.removeAllListeners(`rtsp-message-${item.ipAddr}`);
@@ -1005,6 +1021,7 @@ const captureZ2proFindFn = async () => {
           (item.sort = index + 1),
             (item.isConnect = item.onlineStatus === 1 ? true : false);
         });
+        console.log(message.data.camInfo);
         resolutionCam.value = message.data.camInfo.resolution; // 分辨率
         fpsValue.value = message.data.camInfo.fps; // 帧率
         bitrateValue.value = message.data.camInfo.bitrate; // 码率
@@ -1012,6 +1029,7 @@ const captureZ2proFindFn = async () => {
         aeModelValue.value = message.data.camInfo.aeMode; // 曝光模式
         encCodeValue.value = message.data.camInfo.encType; // 编码格式
         isoValue.value = message.data.camInfo.iso; // 曝光增益
+
         captureTreeData.value = message.data.camList;
         onLineCamList = message.data.camList.filter((item) => item.onlineStatus === 1);
         globals.$store.state.isFullScreenLoading = false;
@@ -1125,7 +1143,7 @@ const encCodeChangeFn = async (val) => {
   await window.electron.ipcRenderer.send("setEncTypeApi", val);
   window.electron.ipcRenderer.once("worker-enc", async (event, message) => {
     globals.$store.state.isFullScreenLoading = false;
-    await sleep(1000);
+    await sleep(200);
     if (message.msgType === "success") {
       z2proConfigJSON.necType = val;
       ElMessage({
@@ -1139,7 +1157,37 @@ const encCodeChangeFn = async (val) => {
     } else {
       encCodeValue.value = z2proConfigJSON.necType;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
+        type: "error",
+        grouping: true,
+        plain: true,
+        showClose: true,
+        offset: 75,
+      });
+    }
+  });
+};
+
+// 设置自动白平衡
+const awbChangeFn = async () => {
+  globals.$store.state.fullScreenloadingText = "设置自动白平衡中，请稍等...";
+  globals.$store.state.isFullScreenLoading = true;
+  await window.electron.ipcRenderer.send("setCamAWBApi");
+  window.electron.ipcRenderer.once("worker-awb", async (event, message) => {
+    globals.$store.state.isFullScreenLoading = false;
+    await sleep(200);
+    if (message.msgType === "success") {
+      ElMessage({
+        message: "操作成功",
+        type: "success",
+        grouping: true,
+        plain: true,
+        showClose: true,
+        offset: 75,
+      });
+    } else {
+      ElMessage({
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1158,7 +1206,7 @@ const alignModelChangeFn = async (val) => {
   await window.electron.ipcRenderer.send("setCamResolutonApi", val);
   window.electron.ipcRenderer.once("worker-resoluton", async (event, message) => {
     globals.$store.state.isFullScreenLoading = false;
-    await sleep(1000);
+    await sleep(200);
     if (message.msgType === "success") {
       z2proConfigJSON.resolutionCam = val;
       ElMessage({
@@ -1172,7 +1220,7 @@ const alignModelChangeFn = async (val) => {
     } else {
       resolutionCam.value = z2proConfigJSON.resolutionCam;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1184,24 +1232,10 @@ const alignModelChangeFn = async (val) => {
 };
 
 // 曝光模式
-const aeTypeChangeFn = async (val) => {
-  if (val === z2proConfigJSON.aeMode) return;
-  await window.electron.ipcRenderer.send("setCamAeModelApi", val);
-  window.electron.ipcRenderer.once("worker-aemode", async (event, message) => {
-    if (message.msgType === "success") {
-      z2proConfigJSON.aeMode = val;
-    } else {
-      aeModelValue.value = z2proConfigJSON.aeMode;
-      ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
-        type: "error",
-        grouping: true,
-        plain: true,
-        showClose: true,
-        offset: 75,
-      });
-    }
-  });
+const aeTypeChangeFn = () => {
+  setTimeout(() => {
+    window.electron.ipcRenderer.send("setCamAeModelApi", 2);
+  }, 3000);
 };
 
 //  设置帧率  change
@@ -1212,7 +1246,7 @@ const camFpsChangeFn = async (val) => {
   await window.electron.ipcRenderer.send("setCamFpsApi", val);
   window.electron.ipcRenderer.once("worker-fps", async (event, message) => {
     globals.$store.state.isFullScreenLoading = false;
-    await sleep(1000);
+    await sleep(200);
     if (message.msgType === "success") {
       z2proConfigJSON.fps = val;
       ElMessage({
@@ -1226,7 +1260,7 @@ const camFpsChangeFn = async (val) => {
     } else {
       fpsValue.value = z2proConfigJSON.fps;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1244,7 +1278,7 @@ const camBitrateChangeFn = async (val) => {
   await window.electron.ipcRenderer.send("setCamBitRateApi", val);
   window.electron.ipcRenderer.once("worker-bitrate", async (event, message) => {
     globals.$store.state.isFullScreenLoading = false;
-    await sleep(1000);
+    await sleep(200);
     if (message.msgType === "success") {
       z2proConfigJSON.bitrate = val;
       ElMessage({
@@ -1258,7 +1292,7 @@ const camBitrateChangeFn = async (val) => {
     } else {
       bitrateValue.value = z2proConfigJSON.bitrate;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1278,7 +1312,7 @@ const camShutterChangeFn = async (val) => {
     } else {
       shutterValue.value = z2proConfigJSON.shutter;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1307,7 +1341,7 @@ const camISOChangeFn = async (val) => {
     } else {
       isoValue.value = z2proConfigJSON.ISOValue;
       ElMessage({
-        message: "设置失败, 请稍等15秒后再重试",
+        message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
         grouping: true,
         plain: true,
@@ -1468,12 +1502,10 @@ const leftShowArrowFn = () => {
           status: onlineCamArr[i - 1].onlineStatus,
           sort: onlineCamArr[i - 1].sort,
         };
-        if (i - 1 === 0) {
-          leftArrowDis.value = true;
-        }
         break;
       }
     }
+    leftArrowDis.value = curBigShowVideosObj.camIp === onlineCamArr[0].ipAddr;
     bigShowCurData(lastObj);
   }
 };
@@ -1487,29 +1519,28 @@ const rightShowArrowFn = () => {
     if (curBigShowVideosObj.camIp === onlineCamArr[onlineCamArr.length - 1].ipAddr) {
       return;
     }
-
     for (let i = 0; i < onlineCamArr.length; i++) {
       if (onlineCamArr[i].ipAddr === curBigShowVideosObj.camIp) {
         lastObj = {
           camIp: onlineCamArr[i + 1].ipAddr,
-
           status: onlineCamArr[i + 1].onlineStatus,
           sort: onlineCamArr[i + 1].sort,
         };
-        if (i + 1 === onlineCamArr.length - 1) {
-          rightArrowDis.value = true;
-        }
         break;
       }
     }
+    rightArrowDis.value =
+      curBigShowVideosObj.camIp === onlineCamArr[onlineCamArr.length - 1].ipAddr;
     bigShowCurData(lastObj);
   }
 };
 
 // 双击显示最大图
-const bigShowCurData = async (item) => {
+const bigShowCurData = async (item, type = "view") => {
   let stopAllShow = await window.electron.ipcRenderer.invoke("stopZ2proAllRtspApi");
   isBigShowVideos.value = true;
+  leftArrowDis.value = false;
+  rightArrowDis.value = false;
   if (canvasTwo) {
     ctxTwo.clearRect(0, 0, canvasTwo.width, canvasTwo.height); // 清空画布
   }
@@ -1533,8 +1564,14 @@ const bigShowCurData = async (item) => {
     if (item.sort === onlineArr.length) {
       rightArrowDis.value = true;
     }
-    for (let key in item) {
-      curBigShowVideosObj[key] = item[key];
+    if (type === "camlist") {
+      curBigShowVideosObj.camIp = item.ipAddr;
+      curBigShowVideosObj.sort = item.sort;
+      curBigShowVideosObj.status = item.onlineStatus;
+    } else {
+      for (let key in item) {
+        curBigShowVideosObj[key] = item[key];
+      }
     }
     await window.electron.ipcRenderer.invoke(
       "startZ2proSingleCam",
@@ -1565,7 +1602,7 @@ const bigShowcloseFn = async () => {
 
 // zpro开始拍摄事件
 const setGatherStatusFn = async () => {
-  if (!syncStatus) {
+  if (!syncStatus.value) {
     return ElMessage({
       message: "相机未同步，不容许拍摄，请等待同步后再拍摄",
       type: "error",
@@ -2088,26 +2125,6 @@ const openCurFile = (item) => {
         line-height: 15px;
         @extend .no-select-params;
       }
-
-      .zpro-set-btn {
-        font-size: 12px;
-        padding: 5px 8px;
-        margin: 5px 0;
-        margin-left: 10px;
-        background-color: #4a4a4b;
-        display: flex;
-        align-items: center;
-        line-height: 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        &:hover {
-          opacity: 0.7;
-        }
-      }
     }
   }
 }
@@ -2171,10 +2188,6 @@ const openCurFile = (item) => {
       }
     }
 
-    .menu-show-native {
-      background-color: #1f1f1f;
-    }
-
     .file-item-name {
       text-align: center;
       width: 50%;
@@ -2230,6 +2243,10 @@ const openCurFile = (item) => {
       height: 100%;
     }
   }
+}
+
+.menu-show-native {
+  background-color: #1b1a1a !important;
 }
 
 .tips-tab {
@@ -2398,6 +2415,26 @@ const openCurFile = (item) => {
     border-color: var(--el-checkbox-checked-icon-color);
     border-width: 2px;
     transform: rotate(45deg) scaleY(1);
+  }
+}
+
+.zpro-set-btn {
+  font-size: 12px;
+  padding: 5px 8px;
+  margin: 5px 0;
+  margin-left: 10px;
+  background-color: #4a4a4b;
+  display: flex;
+  align-items: center;
+  line-height: 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    opacity: 0.7;
   }
 }
 

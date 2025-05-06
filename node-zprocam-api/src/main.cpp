@@ -54,7 +54,8 @@ int CameraCtrlBase::m_initCamera(std::string cam_ip, int allNum)
     }
 
     int secondNum = 0;
-    if (m_camNum != allNum) {
+    if (m_camNum != allNum)
+    {
         Z_CamArray_Search(camIpPtr);
         while (secondNum < 6)
         {
@@ -99,14 +100,14 @@ int CameraCtrlBase::m_initCamera(std::string cam_ip, int allNum)
     return 1;
 };
 
-
 int CameraCtrlBase::startSnap()
 {
-   int ret = Z_CamArray_Snap();
-   if (ret != 0) {
-    return -1;
-   }
-   return 0;
+    int ret = Z_CamArray_Snap();
+    if (ret != 0)
+    {
+        return -1;
+    }
+    return 0;
 }
 
 bool CameraCtrlBase::startSyncCam()
@@ -122,7 +123,6 @@ int CameraCtrlBase::getSyncCam()
     std::cout << "get_sync_status: " << m_sync_status << std::endl;
     return m_sync_status;
 }
-
 
 std::vector<CameraInfo> CameraCtrlBase::getCameraList()
 {
@@ -222,8 +222,8 @@ int CameraCtrlBase::camReboot()
     return 0;
 }
 
-
-int CameraCtrlBase::CameraStorageFormat () {
+int CameraCtrlBase::CameraStorageFormat()
+{
     int ret = Z_CamArray_Storage_Format();
     if (ret != 0)
     {
@@ -232,7 +232,8 @@ int CameraCtrlBase::CameraStorageFormat () {
     return 0;
 }
 
-int CameraCtrlBase::CameraSyncStart () {
+int CameraCtrlBase::CameraSyncStart()
+{
     int ret = Z_CamArray_Sync_Start();
     if (ret != 0)
     {
@@ -241,9 +242,10 @@ int CameraCtrlBase::CameraSyncStart () {
     return 0;
 }
 
-int CameraCtrlBase::CameraSyncStatus () {
+int CameraCtrlBase::CameraSyncStatus()
+{
     int sync_status = 0;
-	int retStatus = Z_CamArray_Sync_Status(&sync_status);
+    int retStatus = Z_CamArray_Sync_Status(&sync_status);
     m_syncStatus = sync_status;
     if (retStatus != 0)
     {
@@ -252,8 +254,8 @@ int CameraCtrlBase::CameraSyncStatus () {
     return 0;
 }
 
-
-int CameraCtrlBase::camera_tf_format() {
+int CameraCtrlBase::camera_tf_format()
+{
     int ret = Z_CamArray_Storage_Format();
     if (ret != 0)
     {
@@ -262,31 +264,33 @@ int CameraCtrlBase::camera_tf_format() {
     return 0;
 }
 
-int CameraCtrlBase::camera_shoot_start() {
+int CameraCtrlBase::camera_shoot_start()
+{
     int ret = Z_CamArray_Record_Start();
+    std::cout << "camera_shoot_start: " << ret << std::endl;
     if (ret != 0)
     {
         return -1;
     }
-    std::cout << "camera_shoot_start: " << ret << "start-shoot" << std::endl;
     return 0;
 }
 
-FileInfo CameraCtrlBase::camera_shoot_end() {
+FileInfo CameraCtrlBase::camera_shoot_end()
+{
     int ret = Z_CamArray_Record_Stop();
     if (ret != 0)
     {
         return {};
     }
     std::cout << "camera_shoot_end: " << ret << "end-shoot" << std::endl;
-    int status = -1; 
+    int status = -1;
     int times = 0;
     char camShootFil[1024] = "";
     int searchTime = 0;
     while (status != 2)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        int m =  Z_CamArray_Record_Status(&status, &times, camShootFil);
+        int m = Z_CamArray_Record_Status(&status, &times, camShootFil);
         searchTime++;
         if (searchTime > 10 && status != 2)
         {
@@ -295,7 +299,8 @@ FileInfo CameraCtrlBase::camera_shoot_end() {
         }
     }
     std::cout << "Z_CamArray_Record_Status: " << status << "-Z_CamArray_Record_tiem:" << times << "-filename:" << std::string(camShootFil) << std::endl;
-    if (status != 2) {
+    if (status != 2)
+    {
         return {};
     }
     FileInfo downfile;
@@ -304,10 +309,11 @@ FileInfo CameraCtrlBase::camera_shoot_end() {
     return downfile;
 }
 
-tfCase CameraCtrlBase::getTFCase() {
+tfCase CameraCtrlBase::getTFCase()
+{
     int status = 0;
-	int cam_space_all = 0;
-	int cam_space_free = 0;
+    int cam_space_all = 0;
+    int cam_space_free = 0;
     tfCase t1;
     int tfSearchNum = 0;
     while (tfSearchNum <= 10)
@@ -315,14 +321,15 @@ tfCase CameraCtrlBase::getTFCase() {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         Z_CamArray_Storage_Status(&status, &cam_space_all, &cam_space_free);
         tfSearchNum++;
-        if (status == 0) {
+        if (status == 0)
+        {
             break;
         }
     }
     t1.cam_space_all = cam_space_all;
     t1.cam_space_free = cam_space_free;
     std::cout << "Z_CamArray_Storage_Status: " << status << "-Z_CamArray_Storage_tiem:" << cam_space_all << "-Z_CamArray_Storage_tiem:" << cam_space_free << std::endl;
-	return t1;
+    return t1;
 }
 
 int CameraCtrlBase::setCamBitrate(int bitrate)
@@ -357,7 +364,8 @@ int CameraCtrlBase::setCaptISO(int isoNum)
     return 1;
 }
 
-int CameraCtrlBase::setCaptEnc(int encType) {
+int CameraCtrlBase::setCaptEnc(int encType)
+{
     int ret = Z_CamArray_Video_Enc_Type_Set(encType);
     std::cout << "Z_CamArray_Video_Enc_Type_Set:" << ret << std::endl;
     if (ret != 0)
@@ -367,7 +375,8 @@ int CameraCtrlBase::setCaptEnc(int encType) {
     return 1;
 }
 
-int CameraCtrlBase::setAeMode(int aeType) {
+int CameraCtrlBase::setAeMode(int aeType)
+{
     int ret = Z_CamArray_AE_Mode_Set(aeType);
     std::cout << "Z_CamArray_AE_Mode_Set:" << ret << std::endl;
     if (ret != 0)
@@ -376,11 +385,22 @@ int CameraCtrlBase::setAeMode(int aeType) {
     }
     return 1;
 }
+int CameraCtrlBase::setAWB()
+{
+    int ret = Z_CamArray_AWB_Set(1);
+    std::cout << "Z_CamArray_AWB_Set:" << ret << std::endl;
+    if (ret != 0)
+    {
+        return -1;
+    }
+    return 1;
+}
 
 
-CamearParams CameraCtrlBase::getCameraParams() {
+CamearParams CameraCtrlBase::getCameraParams()
+{
     CamearParams camParams;
-    int resolution = 0, fps = 0, encType = 0, bitrate = 0, aeMode = 0, shutter = 0, isoVal = 0; 
+    int resolution = 0, fps = 0, encType = 0, bitrate = 0, aeMode = 0, shutter = 0, isoVal = 0;
     int res1 = Z_CamArray_Image_Pixel_Get(&resolution);
     int res2 = Z_CamArray_Framerate_Get(&fps);
     int res3 = Z_CamArray_Video_Enc_Type_Get(&encType);
@@ -397,5 +417,6 @@ CamearParams CameraCtrlBase::getCameraParams() {
     camParams.aeMode = aeMode;
     camParams.shutter = shutter;
     camParams.iso = isoVal;
+
     return camParams;
 }

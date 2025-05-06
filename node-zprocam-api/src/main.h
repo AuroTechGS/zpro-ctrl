@@ -55,6 +55,7 @@ public:
     int setCaptISO(int isoNum);
     int setCaptEnc(int encType);
     int setAeMode(int aeType);
+    int setAWB();
     FileInfo camera_shoot_end();
     tfCase getTFCase();
     CamearParams getCameraParams();

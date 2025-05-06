@@ -43,7 +43,6 @@
         </li>
       </ul>
     </div>
-
     <div class="right-seg-cas">
       <div class="right-rect-box" ref="casImgBox">
         <div class="tips-tab">
@@ -71,12 +70,19 @@
         </div>
       </div>
     </div>
+    <openProcess
+      :isShow="showProcBox"
+      :processVal="trainProcess"
+      :curTitle="processTitle"
+      @closeDialog="proDialogCloseFn"
+    />
   </div>
 </template>
 
 <script setup lang="js">
 import "simplebar/dist/simplebar.min.css";
 import SimpleBar from "simplebar";
+import openProcess from "./openProcess.vue";
 import { ref, onMounted, onUnmounted, nextTick, getCurrentInstance, reactive, computed, watch } from 'vue';
 import { createWS, sendWs } from "../../assets/js/wsClient.js";
 import { ElMessage } from "element-plus";
@@ -93,7 +99,10 @@ let container = ref(null)
 let casImgBox = ref(null)
 let cavWid = ref(0)
 let cavHei = ref(0)
+let showProcBox = ref(false)
+let processTitle = ref('正在进行生成中，请稍等...')
 
+let trainProcess = ref(0)
 
 let manPng = ref('')
 let maskPng = ref('')
@@ -139,11 +148,21 @@ watch(wsMessage, (newVal) => {
   }
 })
 
+const proDialogCloseFn = () => {
+  sendWs({
+    reqType: "/endStaticTrain",
+    sourcePath: globals.$store.state.curModuleObj.full_path,
+    sourceName: globals.$store.state.curModuleObj.name,
+  });
+  showProcBox.value = false
+}
+
 const selectStatus = () => {
   router.push("/index/sourceSelect");
 };
 
 const inputDesciptFn = () => {
+  showProcBox.value = true;
   sendWs({
     reqType: "/startStaticTrain",
     sourcePath: globals.$store.state.curModuleObj.full_path,
@@ -153,6 +172,8 @@ const inputDesciptFn = () => {
 
 let canvas = null
 onMounted(() => {
+  let params = route.query || {};
+
   nextTick(async () => {
     createWS();
     await sleep(500);

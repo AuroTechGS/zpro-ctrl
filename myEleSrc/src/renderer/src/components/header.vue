@@ -1,15 +1,15 @@
 <template>
     <div class="head-box">
-        <div class="nav-left" @mousedown="mdfn" @mouseup="mufn">
+        <div class="nav-left">
             <img class="ico-img" src="../assets/images/icoimg.png" alt=""></img>
             <div class="menus-seting">
-                <!-- <div class="top-button-set" :class="[tabStatus === 0 ? 'top-button-active' : '']"
-                    @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut" @click="captureOtherFn">
+                <div class="top-button-set" :class="[tabStatus === 0 ? 'top-button-active' : '']"
+                     @click="captureOtherFn">
                     <VideoCamera style="width: 1.2em; height: 1.2em; margin-right: 4px;" />
                     拍摄
-                </div> -->
-                <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false" @mousedown.stop="stopDefaut"
-                    @mouseup.stop="stopDefaut" :disabled="globals.$store.state.isFullScreenLoading">
+                </div>
+                <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false" 
+                     :disabled="globals.$store.state.isFullScreenLoading">
                     <div class="top-button-set">
                         <VideoCamera style="width: 1.2em; height: 1.2em; margin-right: 4px;" />
                         相机
@@ -25,12 +25,12 @@
                     </template>
                 </el-dropdown> -->
                 <div class="top-button-set" :class="[tabStatus === 1 ? 'top-button-active' : '']"
-                    @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut" @click="imgSegFn">
+                     @click="imgSegFn">
                     <Crop style="width: 1em; height: 1em; margin-right: 4px;margin-top: 2px;" />
                     建模
                 </div>
-                <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false" @mousedown.stop="stopDefaut"
-                    @mouseup.stop="stopDefaut" :disabled="globals.$store.state.isFullScreenLoading">
+                <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false"
+                    :disabled="globals.$store.state.isFullScreenLoading">
                     <div class="top-button-set">
                         <Edit style="width: 1em; height: 1em; margin-right: 4px;margin-top: 2px;" />
                         帮助
@@ -47,15 +47,13 @@
             </div>
         </div>
         <div class="nav-right">
-            <Setting class="nav-close" title="设置" @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut" />
-            <Minus class="nav-close" style="padding: 0 2px;" @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut"
+            <Setting class="nav-close" title="设置"  />
+            <Minus class="nav-close" style="padding: 0 2px;"
                 @click="appSetingFn('min')" />
-            <FullScreen v-if="!globals.$store.state.isFullScreen" class="nav-close" @mousedown.stop="stopDefaut"
-                @mouseup.stop="stopDefaut" @click="appSetingFn('max')" />
+            <FullScreen v-if="!globals.$store.state.isFullScreen" class="nav-close"  @click="appSetingFn('max')" />
             <CopyDocument v-if="globals.$store.state.isFullScreen" class="nav-close"
-                :class="[globals.$store.state.isImagesSeg ? 'isSegImgs-noMax' : '']" @mousedown.stop="stopDefaut"
-                @mouseup.stop="stopDefaut" @click="appSetingFn('restoreDown')" />
-            <Close class="nav-close close-hover" @mousedown.stop="stopDefaut" @mouseup.stop="stopDefaut"
+                :class="[globals.$store.state.isImagesSeg ? 'isSegImgs-noMax' : '']"  @click="appSetingFn('restoreDown')" />
+            <Close class="nav-close close-hover"
                 @click="appSetingFn('close')" />
         </div>
     </div>
@@ -111,20 +109,7 @@ const appSetingFn = (type) => {
     }
 }
 
-const stopDefaut = (event) => {
-    event.preventDefault();
-    event.stopPropagation();  // 阻止事件冒泡
-}
 
-const mdfn = (e) => {
-    if (globals.$store.state.isFullScreen) return
-    window.electron.ipcRenderer.invoke("Main_Window_Operate", 'mouse_d');
-}
-
-const mufn = (e) => {
-    if (globals.$store.state.isFullScreen) return
-    window.electron.ipcRenderer.invoke("Main_Window_Operate", 'mouse_u');
-}
 </script>
 
 
@@ -145,7 +130,7 @@ const mufn = (e) => {
         top: 0;
         background-repeat: no-repeat;
         color: white;
-
+        -webkit-app-region: drag;
         .ico-img {
             padding: 3px;
             height: 32px;
@@ -259,12 +244,13 @@ const mufn = (e) => {
     align-items: center;
     padding: 4px 8px;
     border-radius: 5px;
-    cursor: pointer;
+    // cursor: pointer;
     color: #9d9d9d;
-
+    -webkit-app-region: no-drag;
     &:hover {
         background-color: #2D2E2E;
         color: white;
+        cursor: pointer;
     }
 }
 

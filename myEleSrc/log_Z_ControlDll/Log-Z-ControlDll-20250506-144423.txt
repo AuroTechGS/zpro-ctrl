@@ -1,0 +1,42 @@
+[14:44:23][INFO]DLL start, log file path[./log_Z_ControlDll/Log-Z-ControlDll-20250506-144423.txt]
+
+[14:44:23][INFO]panodux Z SDK ver:0x000200d3
+
+[14:44:23][INFO]host name[akswb]
+
+[14:44:23][INFO]Your all IP address are
+
+[14:44:23][INFO]  192.168.31.195
+
+[14:44:23][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.195] *********
+
+[14:44:23][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.195]
+
+[14:44:23][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 438] add success mcast_ip:239.55.0.0, mcast_port:2020, local_ip:192.168.31.195
+
+[14:44:23][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 478] sockaddr_SearchDev[239.55.0.0:2020]
+
+[14:44:23][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Sendto@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 490]send len:36, to[239.55.0.0:2020]
+
+[14:44:28][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Recvfrom@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 516]recv len:-1, from[0.0.0.0]
+
+[14:44:28][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 509] search 0 dev
+
+[14:44:28][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 699] valid_dev_sum[0]
+
+[14:44:29][INFO]host name[akswb]
+
+[14:44:29][INFO]Your all IP address are
+
+[14:44:29][INFO]  192.168.31.195
+
+[14:44:29][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 448] curr Host Ethernet ********* [192.168.31.195] *********
+
+[14:44:29][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 330]  mcast_ip[239.55.0.0], mcast_port[2020], local_ip[192.168.31.195]
+
+[14:44:29][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Create@@YAHPEA_KPEADH1PEAUsockaddr_in@@@Z 438] add success mcast_ip:239.55.0.0, mcast_port:2020, local_ip:192.168.31.195
+
+[14:44:29][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\z_control_sdk.cpp Z_DevFind 478] sockaddr_SearchDev[239.55.0.0:2020]
+
+[14:44:29][INFO][e:\workspace\z2\windows_tool\sdk\z_control_sdk\z_control_sdk\net.cpp ?MCast_Sendto@@YAHPEA_KPEADHPEAUsockaddr_in@@@Z 490]send len:36, to[239.55.0.0:2020]
+
