@@ -11,6 +11,7 @@ import store from './store'
 const app = createApp(App)
 
 
+
 // 防止修改sessionStorage
 window.addEventListener('storage', (e) => {
     sessionStorage.setItem(e.key, e.oldValue)
