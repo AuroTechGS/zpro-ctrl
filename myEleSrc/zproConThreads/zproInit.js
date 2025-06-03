@@ -22,9 +22,11 @@ parentPort.on('message', async (message) => {
             let res = await zporCtrlObj.initMyCamera(message.params.val.ipAddr, Number(message.params.val.camNum));
             if (res == 1) {
                 let camList = zporCtrlObj.getCamList();
-                let camInfo = zporCtrlObj.getCaptParamsInfo();
-
-                zporCtrlObj.setSyncCam();
+                let camInfo = null;
+                if (camList.length > 0) {
+                    camInfo = zporCtrlObj.getCaptParamsInfo();
+                    zporCtrlObj.setSyncCam();
+                }
                 parentPort.postMessage({ msgBackInfo: 'init_z2pro',  msg: '操作成功', msgType: 'success', data: { camList: camList, camInfo: camInfo } });
             } else {
                 parentPort.postMessage({ msgBackInfo: 'init_z2pro', msg: res, msgType: 'error' });
@@ -36,8 +38,11 @@ parentPort.on('message', async (message) => {
             let res = await zporCtrlObj.initMyCamera(message.params.val.ipAddr, Number(message.params.val.camNum));
             if (res == 1) {
                 let camList = zporCtrlObj.getCamList();
-                let camInfo = zporCtrlObj.getCaptParamsInfo();
-                zporCtrlObj.setSyncCam();
+                let camInfo = null;
+                if (camList.length > 0) {
+                    camInfo = zporCtrlObj.getCaptParamsInfo();
+                    zporCtrlObj.setSyncCam();
+                }
                 parentPort.postMessage({ msgBackInfo: 'refind_z2pro',  msg: '操作成功', msgType: 'success', data: { camList: camList, camInfo: camInfo } });
             } else {
                 parentPort.postMessage({ msgBackInfo: 'refind_z2pro', msg: res, msgType: 'error' });
@@ -75,7 +80,9 @@ parentPort.on('message', async (message) => {
         if (message.msgInfo === 'z2pro_strat_shoot') {
             let res = await zporCtrlObj.startCamshoot();
             if (res == 0) {
-                parentPort.postMessage({ msgBackInfo: 'z2pro_strat_shoot', msg: '操作成功', msgType: 'success' });
+                let filePath = path.join(message.params.downPath, message.params.fileName);
+                fs.mkdirSync(filePath, { recursive: true });
+                parentPort.postMessage({ msgBackInfo: 'z2pro_strat_shoot', data: filePath, msg: '操作成功', msgType: 'success' });
             }  else {
                 parentPort.postMessage({ msgBackInfo: 'z2pro_strat_shoot', msg: res, msgType: 'error' });
             }
@@ -117,6 +124,7 @@ parentPort.on('message', async (message) => {
                 }
             }
             if (res === 1) {
+                 await sleep(3000);
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_resoluton', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_resoluton', msg: 'error'})
@@ -132,6 +140,7 @@ parentPort.on('message', async (message) => {
                 }
             }
             if (res === 1) {
+                 await sleep(3000);
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_fps', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_fps', msg: 'error'})
@@ -147,6 +156,7 @@ parentPort.on('message', async (message) => {
                 }
             }
             if (res === 1) {
+                 await sleep(3000);
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_bitrate', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_bitrate', msg: 'error'})
@@ -162,6 +172,7 @@ parentPort.on('message', async (message) => {
                 }
             }
             if (res === 1) {
+                 await sleep(3000);
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_enc', msg: '操作成功', msgType: 'success', data: res });
             } else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_enc', msg: 'error'})
@@ -210,6 +221,7 @@ parentPort.on('message', async (message) => {
                 }
             }
             if (res === 1) {
+                await sleep(3000);
                 parentPort.postMessage({ msgBackInfo: 'z2pro_set_AWB', msg: '操作成功', msgType: 'success', data: res });
             }  else {
                 parentPort.postMessage({msgBackInfo: 'z2pro_set_AWB', msg: 'error'})

@@ -1493,8 +1493,6 @@ const getPointsFn = async () => {
   overflow: hidden;
 }
 
-
-
 .left-project-files {
   width: 250px;
   height: 100%;

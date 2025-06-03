@@ -5,7 +5,6 @@ import { ElMessage } from "element-plus";
 
 let socket = null
 let url = "ws:192.168.31.251:9978"
-// let url = "ws:127.0.0.1:9978"
 let reconnectTimer = null
 let heartbeatTimer = null
 let reconnectAttempts = 0
@@ -14,7 +13,7 @@ export const CAMERANUM = 24
 
 const MAX_RECONNECT_ATTEMPTS = 5
 const HEARTBEAT_INTERVAL = 20000
-const RECONNECT_INTERVAL = 5000
+const RECONNECT_INTERVAL = 3000
 
 export function createWS() {
     if (socket && socket.readyState !== WebSocket.CLOSED) return socket
@@ -23,6 +22,7 @@ export function createWS() {
         console.log("[WS] 连接成功")
         store.state.fullScreenloadingText = '连接成功';
         store.state.isFullScreenLoading = false;
+        store.state.wsConnectStatus = true
         reconnectAttempts = 0
         sendWs({
             reqType: "firstCon"
@@ -40,6 +40,7 @@ export function createWS() {
     socket.onclose = () => {
         console.warn("[WS] 连接关闭")
         stopHeartbeat()
+        store.state.wsConnectStatus = false
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttempts++
             console.log(`网络连接中断, 第 ${reconnectAttempts} 次重连尝试...`)
@@ -51,6 +52,7 @@ export function createWS() {
         } else {
             store.state.fullScreenloadingText = `超过最大重连次数 (${MAX_RECONNECT_ATTEMPTS})，停止尝试， 请检查网络。`;
             store.state.isFullScreenLoading = false;
+            reconnectAttempts = 0;
             ElMessage({
                 message: `超过最大重连次数 (${MAX_RECONNECT_ATTEMPTS})，停止尝试， 请检查网络。`,
                 type: "error",

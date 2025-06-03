@@ -11,13 +11,13 @@ const ftp = require('basic-ftp');
 const cv = require("opencv.js");
 const { createCanvas } = require("canvas");
 import moment from 'moment';
-// process.env.LD_LIBRARY_PATH = `${process.resourcesPath}/lib:${process.env.LD_LIBRARY_PATH}`;
-// console.log("LD_LIBRARY_PATH set to:", process.env.LD_LIBRARY_PATH);
 
 const sleep = (delay) => {
   return new Promise((resolve) => setTimeout(resolve, delay))
 }
 
+let appFoucs = true;
+let isAutoClose = false;
 
 if (process.env.NODE_ENV === 'development') {
   ffmpegPath = require(path.resolve(__dirname, '../../depences/ffmpeg-static/index.js'))
@@ -25,7 +25,6 @@ if (process.env.NODE_ENV === 'development') {
   ffmpegPath = require(path.resolve(__dirname, '../../../depences/ffmpeg-static/index.js'))
 }
 
-let OBcPluseModel = null;
 let thread_list = []
 
 let mainWindow;
@@ -53,7 +52,6 @@ function createWindow() {
       enableRemoteModule: false, // 确保安全性
       nodeIntegration: true, // 如果需要使用 Node.js 功能，可以开启 nodeIntegration
       devTools: process.env.NODE_ENV === 'development' ? true : false,  // 调试模式是否开启
-      // devTools: true,
       contextIsolation: false,
       sandbox: false,
       webSecurity: false,  // 禁用 Web 安全检查
@@ -64,7 +62,13 @@ function createWindow() {
     app.setAppUserModelId('com.yourcompany.yourapp');
     mainWindow.show();
   })
-
+  // 判断应用是否失焦 失焦后渲染进程不活跃不再接收视频数据进行渲染， 避免主进程持续发送图像数据未及时处理，导致内存持续增大然后应用卡死
+  app.on('browser-window-blur', () => {
+    appFoucs = false;
+  });
+  app.on('browser-window-focus', () => {
+    appFoucs = true;
+  });
   // 底部菜单栏关闭触发事件  需关闭后台所有线程
   mainWindow.on('closed', () => {
     stopHLSStreams();
@@ -88,170 +92,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
-
-
-ipcMain.handle('ObInitMain', async (_e) => {
-  let nodePath = process.env.NODE_ENV === 'development' ? '../../../node-addon-api/build/Release/addon.node' : '';
-  OBcPluseModel = require(nodePath)
-  try {
-    let data = OBcPluseModel.loadConfigFile('D:/myProgram/newElectron-Cam/node-addon-api/src/config/OBsync.json')
-    if (data.status == -1) {
-      return { msg: '读取或解析 JSON 时出错', msgType: 'error' };
-    }
-    if (data.status == -2) {
-      return { msg: '相机配置出错，请检查相机链接', msgType: 'error' };
-    }
-    if (data.status == 1) {
-      return { msg: data.data, msgType: 'success' };
-    }
-  } catch (error) {
-    console.error('Failed to load @electron/fix-path:', error);
-  }
-});
-
-ipcMain.handle('setAlignModel', async (_e, value) => {
-  // let result = await myDll.func('void setOBAlignModel(int alignModel)');
-  // try {
-  //   result(value);
-  //   return { msg: '设置成功', msgType: 'success' };
-  // } catch (error) {
-  //   return { msg: '设置失败', msgType: 'error' };
-  // }
-});
-
-
-ipcMain.handle('eleApiOpenAllCam', async (_e) => {
-  if (OBcPluseModel) {
-    try {
-      let data = await OBcPluseModel.openAllDeviceApi()
-      if (data.status != 1) {
-        return { msg: '所有相机连接失败, 请检查相机是否正确连接', msgType: 'error' };
-      } else {
-        return { msg: data.data, msgType: 'success' };
-      }
-    } catch (error) {
-      return { msg: '所有相机连接失败, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-});
-
-
-ipcMain.handle('eleApiOpenSingleCam', async (_e, val) => {
-  if (OBcPluseModel) {
-    try {
-      let isSuccess = await OBcPluseModel.openDeviceApi(val)
-      if (isSuccess) {
-        return { msg: '连接成功', msgType: 'success' };
-      } else {
-        return { msg: '相机连接失败, 请检查相机是否正确连接', msgType: 'error' };
-      }
-
-    } catch (error) {
-      return { msg: '相机连接失败, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-});
-
-
-ipcMain.handle('eleApiStartCap', async (_e) => {
-  if (OBcPluseModel) {
-    try {
-      let data = await OBcPluseModel.startCaptureApi()
-      if (data.status != 1) {
-        return { msg: '相机连接错误, 请检查相机是否正确连接', msgType: 'error' };
-      } else {
-        return { msg: data.data, msgType: 'success' };
-      }
-    } catch (error) {
-      return { msg: '相机连接错误, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-});
-
-ipcMain.handle('eleApiCloseOBSingleCam', async (_e, val) => {
-  if (OBcPluseModel) {
-    try {
-      let isSuccess = await OBcPluseModel.closeSingleDeviceApi(val)
-      if (isSuccess) {
-        return { msg: '操作成功', msgType: 'success' };
-      } else {
-        return { msg: '相机关闭失败, 请检查相机是否正确连接', msgType: 'error' };
-      }
-
-    } catch (error) {
-      return { msg: '相机关闭失败, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-})
-
-
-ipcMain.handle('eleApiCloseOBAllCam', async (_e) => {
-  if (OBcPluseModel) {
-    try {
-      let isSuccess = await OBcPluseModel.closeAllDeviceApi()
-      if (isSuccess) {
-        return { msg: '操作成功', msgType: 'success' };
-      } else {
-        return { msg: '相机关闭失败, 请检查相机是否正确连接', msgType: 'error' };
-      }
-    } catch (error) {
-      return { msg: '相机关闭失败, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-})
-
-
-
-
-ipcMain.handle('startCaptureApi', (_e, camNum) => {
-  // let bufferSize = 500000;
-  // let arr = []
-  // for (let i = 0; i < camNum; i++) {
-  //   let buf = Buffer.alloc(bufferSize)
-  //   arr.push(buf);
-  // }
-  // let frameDataPointer = myDll.func('const char *getData(unsigned char **buffer, int bufferNum)');
-  // let frameData = frameDataPointer(arr);
-  // if (frameData && frameData.length > 1) {
-  //   let cursize = frameData.slice(0, -1);
-  //   let sizeList = cursize.split(',');
-  //   if (sizeList.length === camNum) {
-  //     arr.forEach((item, index) => {
-  //       item = item.subarray(0, Number(sizeList[index]));
-  //     });
-  //   }
-  // }
-  // return { msg: '获取成功', msgType: 'success', data: { camName: 'cam1', arrarBuffer: arr } };
-});
-
-ipcMain.handle('stopCaptureApi', async (_e) => {
-  if (OBcPluseModel) {
-    try {
-      let isSuccess = await OBcPluseModel.stopCaptureApi()
-      if (isSuccess) {
-        return { msg: '操作成功', msgType: 'success' };
-      } else {
-        return { msg: '操作失败, 请检查相机是否正确连接', msgType: 'error' };
-      }
-    } catch (error) {
-      return { msg: '操作失败, 请检查相机是否正确连接', msgType: 'error' };
-    }
-  } else {
-    return { msg: '模块加载错误', msgType: 'error' };
-  }
-})
-
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -480,11 +320,6 @@ ipcMain.on('z2proDownMp4EleApi', async (event, val) => {
     if (downWorker === null) {
       createdDownThreads();
     }
-    let downPath = val.downPath.indexOf('\\') === -1 ? path.resolve(__dirname, `../../${val.downPath}`) : val.downPath;
-    let curTime = moment().format('YYYY-MM-DD_HH-mm-ss');
-    let fileName = curTime.replaceAll('-', '').replace('_', '')
-    let dirPath = path.join(downPath, `/${fileName}`);
-
     let arr = []
     val.camList.forEach(item => {
       arr.push({
@@ -493,13 +328,13 @@ ipcMain.on('z2proDownMp4EleApi', async (event, val) => {
         pwd: 'panodux'
       })
     })
-    
+
     let messageParams = {
       msgInfo: 'down-mp4',
       params: {
         ipValList: arr,
         pathInfo: val.pathInfo,
-        downPath: dirPath,
+        downPath: val.filePath,
       }
     }
     downWorker.postMessage(messageParams);
@@ -587,12 +422,12 @@ ipcMain.on('z2proFormattfApi', async (event) => {
 })
 
 
-ipcMain.on('z2proStartShootApi', async (event) => {
+ipcMain.on('z2proStartShootApi', async (event, param) => {
   try {
     if (worker) {
       let messageParams = {
         msgInfo: 'z2pro_strat_shoot',
-        params: {}
+        params: param
       }
       worker.postMessage(messageParams);
     }
@@ -615,7 +450,7 @@ ipcMain.on('stopZ2proAllCaptureApi', async (event) => {
   }
 })
 
-
+let coverImg = null
 
 // 启动 RTSP 流转化为 jpg
 function startHLSStreams(cameras, width, height, frameRate) {
@@ -654,7 +489,12 @@ function startHLSStreams(cameras, width, height, frameRate) {
     // 启动 FFmpeg
     thread_list.push(ffmpeg)
     ffmpeg.stdout.on('data', (data) => {
-      if (isWindowActive(mainWindow)) {
+      setTimeout(() => {
+        if (coverImg === null && data.length) {
+          coverImg = data;
+        }
+      }, 2000)
+      if (isWindowActive(mainWindow) && appFoucs) {
         mainWindow.webContents.send(`rtsp-message-${item}`, {
           camIp: item,
           data: data
@@ -664,9 +504,11 @@ function startHLSStreams(cameras, width, height, frameRate) {
     ffmpeg.stderr.on('data', (data) => {
     });
     ffmpeg.on('close', (code) => {
-      // mainWindow.webContents.send(`rtsp-close-cam`, {
-      //   camIp: item,
-      // });
+      if (isAutoClose) {
+        mainWindow.webContents.send(`rtsp-close-cam`, {
+          camIp: item,
+        });
+      }
     });
   });
 }
@@ -710,9 +552,11 @@ function stopHLSStreams() {
   if (thread_list.length === 0) {
     return;
   }
+  isAutoClose = false;
   thread_list.forEach(item => {
     item.kill();
   });
+  isAutoClose = true;
 }
 
 // 开始全部预览
@@ -953,6 +797,17 @@ ipcMain.handle('openFolderPicker', async (event) => {
 // 一次视频完整下载成功
 ipcMain.on('downVideoAllSuccess', async (event, val) => {
   let jsonPath = path.join(val.filePath, `/view_config.json`);
+  if (coverImg !== null) {
+    let coverPath = path.join(val.filePath, `/cover.jpg`);
+    fs.writeFile(coverPath, coverImg, (err) => {
+      if (err) {
+        console.error('保存图片失败:', err);
+      } else {
+        console.log('图片已保存到:', coverPath);
+        coverImg = null;
+      }
+    });
+  }
   if (fs.existsSync(jsonPath)) {
     // 读取文件内容
     const data = await prmFs.readFile(jsonPath, 'utf-8');
@@ -1106,7 +961,7 @@ let lastFrameSet = null;
 // 获取数据帧文件夹列表
 ipcMain.handle('getFrameOrginfilesApi', async (event) => {
   let folderPath = ''
-  if  (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     folderPath = path.resolve(__dirname, '../../frame_dir');
   } else {
     folderPath = path.resolve(__dirname, '../../../../frame_dir')
@@ -1131,8 +986,8 @@ ipcMain.handle('getFrameOrginfilesApi', async (event) => {
           // 读取文件内容
           const data = await prmFs.readFile(editJsonPath, 'utf-8');
           // 解析为 JSON 对象
-            const jsonData = JSON.parse(data);
-            editNameList = jsonData.editList;
+          const jsonData = JSON.parse(data);
+          editNameList = jsonData.editList;
         }
         filsList.push({
           fileName: files[i],
@@ -1155,6 +1010,26 @@ ipcMain.handle('getFrameOrginfilesApi', async (event) => {
     }
   }
 })
+
+const getCurDirPng2 = (dirPath) => {
+  let pngFilsList = [];
+  let files = fs.readdirSync(dirPath);
+  for (let i = 0; i < files.length; i++) {
+    if (files[i].indexOf('.png') !== -1) {
+      const filePath = path.join(dirPath, files[i]);
+      let obj = {
+        fileName: files[i],
+        filePath: filePath,
+        type: 'png',
+        isEdit: false
+      }
+      pngFilsList.push(obj)
+    }
+  }
+  return pngFilsList
+}
+
+
 
 const getCurDirPng = (dirPath, editNameList) => {
   let pngFilsList = [];
@@ -1218,12 +1093,12 @@ ipcMain.handle('saveMaskDataToPng', async (event, val) => {
       // 读取文件内容
       const data = await prmFs.readFile(editJsonPath, 'utf-8');
       // 解析为 JSON 对象
-        const jsonData = JSON.parse(data);
-        editMaskNameList = jsonData.editList;
-        let isExistIndex = editMaskNameList.findIndex(iccm => iccm === val.fileName)
-        if (isExistIndex === -1) {
-          editMaskNameList.push(val.fileName)
-        }
+      const jsonData = JSON.parse(data);
+      editMaskNameList = jsonData.editList;
+      let isExistIndex = editMaskNameList.findIndex(iccm => iccm === val.fileName)
+      if (isExistIndex === -1) {
+        editMaskNameList.push(val.fileName)
+      }
     } else {
       editMaskNameList.push(val.fileName)
     }
@@ -1232,7 +1107,7 @@ ipcMain.handle('saveMaskDataToPng', async (event, val) => {
     }
     fs.writeFileSync(editJsonPath, JSON.stringify(obj, null, 2), 'utf8');
     await sleep(500);
-    generateBinaryImage( val.maskData, val.width, val.height, maskPath);
+    generateBinaryImage(val.maskData, val.width, val.height, maskPath);
     return {
       msgType: 'success',
       msg: '操作成功'
@@ -1244,6 +1119,8 @@ ipcMain.handle('saveMaskDataToPng', async (event, val) => {
     }
   }
 });
+
+
 
 // 读取二值图 获取 原标注点组
 ipcMain.on('getImgDataPoints', async (event, val) => {

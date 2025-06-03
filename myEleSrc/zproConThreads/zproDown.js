@@ -26,6 +26,7 @@ async function downloadFile(downInfo, fileName) {
     }
 }
 
+
 // 监听主线程发送的消息
 parentPort.on('message', async (message) => {
     try {
@@ -33,7 +34,7 @@ parentPort.on('message', async (message) => {
             if (message.params.ipValList.length) {
                 let dirPath = message.params.downPath;
                 let videoPath = path.join(dirPath, 'original');
-                if (!fs.existsSync(dirPath)) {
+                if (!fs.existsSync(videoPath)) {
                     fs.mkdirSync(videoPath, { recursive: true });
                     let obj = {
                         times: message.params.pathInfo.formatTime,
@@ -45,6 +46,7 @@ parentPort.on('message', async (message) => {
                     console.log('created files  success');
                     parentPort.postMessage({ msgBackInfo: 'down-mp4', msgType: 'success', msg: 'mkdir', data: dirPath });
                 }
+
                 message.params.ipValList.forEach(item => {
                     item.outUrl = videoPath
                 })

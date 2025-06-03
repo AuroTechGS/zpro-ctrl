@@ -3,10 +3,15 @@
         <div class="nav-left">
             <img class="ico-img" src="../assets/images/icoimg.png" alt=""></img>
             <div class="menus-seting">
+
                 <div class="top-button-set" :class="[tabStatus === 0 ? 'top-button-active' : '']"
-                     @click="captureOtherFn">
+                    @click="captureOtherFn">
                     <VideoCamera style="width: 1.2em; height: 1.2em; margin-right: 4px;" />
                     拍摄
+                </div>
+                <div class="top-button-set" :class="[tabStatus === 1 ? 'top-button-active' : '']" @click="imgSegFn">
+                    <Crop style="width: 1em; height: 1em; margin-right: 4px;margin-top: 2px;" />
+                    建模
                 </div>
                 <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false" 
                      :disabled="globals.$store.state.isFullScreenLoading">
@@ -23,12 +28,7 @@
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
-                </el-dropdown> -->
-                <div class="top-button-set" :class="[tabStatus === 1 ? 'top-button-active' : '']"
-                     @click="imgSegFn">
-                    <Crop style="width: 1em; height: 1em; margin-right: 4px;margin-top: 2px;" />
-                    建模
-                </div>
+</el-dropdown> -->
                 <!-- <el-dropdown placement="bottom-start" trigger="click" :teleported="false"
                     :disabled="globals.$store.state.isFullScreenLoading">
                     <div class="top-button-set">
@@ -47,14 +47,13 @@
             </div>
         </div>
         <div class="nav-right">
-            <Setting class="nav-close" title="设置"  />
-            <Minus class="nav-close" style="padding: 0 2px;"
-                @click="appSetingFn('min')" />
-            <FullScreen v-if="!globals.$store.state.isFullScreen" class="nav-close"  @click="appSetingFn('max')" />
+            <Setting class="nav-close" title="设置" />
+            <Minus class="nav-close" style="padding: 0 2px;" @click="appSetingFn('min')" />
+            <FullScreen v-if="!globals.$store.state.isFullScreen" class="nav-close" @click="appSetingFn('max')" />
             <CopyDocument v-if="globals.$store.state.isFullScreen" class="nav-close"
-                :class="[globals.$store.state.isImagesSeg ? 'isSegImgs-noMax' : '']"  @click="appSetingFn('restoreDown')" />
-            <Close class="nav-close close-hover"
-                @click="appSetingFn('close')" />
+                :class="[globals.$store.state.isImagesSeg ? 'isSegImgs-noMax' : '']"
+                @click="appSetingFn('restoreDown')" />
+            <Close class="nav-close close-hover" @click="appSetingFn('close')" />
         </div>
     </div>
 </template>
@@ -70,7 +69,7 @@ import {
 } from '@element-plus/icons-vue'
 
 let appName = ref('')
-let tabStatus = ref(1)
+let tabStatus = ref(0);
 
 const router = useRouter();
 
@@ -131,6 +130,7 @@ const appSetingFn = (type) => {
         background-repeat: no-repeat;
         color: white;
         -webkit-app-region: drag;
+
         .ico-img {
             padding: 3px;
             height: 32px;
@@ -247,6 +247,7 @@ const appSetingFn = (type) => {
     // cursor: pointer;
     color: #9d9d9d;
     -webkit-app-region: no-drag;
+
     &:hover {
         background-color: #2D2E2E;
         color: white;

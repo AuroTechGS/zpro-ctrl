@@ -22,6 +22,7 @@
       <div class="source-list-box">
         <ul>
           <li class="source-item" v-for="(item, index) in sourceList" :key="index">
+            <img class="cover_img" v-if="item.cover" :src="item.cover" alt="" />
             <div class="item-name single-text-overflow">{{ item.name }}</div>
             <div style="font-size: 14px; margin: 5px 0">{{ item.creatDate }}</div>
             <div class="item-more">
@@ -362,6 +363,9 @@ onMounted(async () => {
 onUnmounted(() => {});
 
 const refrushFn = async () => {
+  if (!globals.$store.state.wsConnectStatus) {
+    createWS();
+  }
   globals.$store.state.fullScreenloadingText = "正在获取我的资源中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await sleep(1000);
@@ -452,7 +456,6 @@ const dealFiles = (data) => {
     item.creatDate = moment(item.created_at).format("YYYY-MM-DD HH:mm:ss");
   });
   sourceList.value = data;
-  console.log(sourceList.value);
 };
 
 // 开始分割
@@ -608,6 +611,13 @@ const moreFn = () => {};
       padding: 8px 6px;
       filter: drop-shadow(1px 2px 6px rgb(167, 238, 240));
 
+      .cover_img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+
       .item-name {
         width: calc(100% - 22px);
         font-size: 20px;
@@ -704,6 +714,7 @@ const moreFn = () => {};
     opacity: 0.8;
   }
 }
+
 .refrush-box {
   // display: inline-block;
   float: right;
@@ -712,11 +723,14 @@ const moreFn = () => {};
   height: 28px;
   color: rgb(41, 185, 41);
   cursor: pointer;
+
   &:hover {
     opacity: 0.8;
   }
+
   i {
     font-size: 22px !important;
+
     &::before {
       font-size: 22px !important;
     }

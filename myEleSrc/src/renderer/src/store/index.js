@@ -14,6 +14,7 @@ export default createStore({
     isShowBottomGatherBox: true,
     isImagesSeg: false, // 强制全屏分割图像
     wsMessage: null,
+    wsConnectStatus: false,
     curModuleObj: {},
   },
   getters: {

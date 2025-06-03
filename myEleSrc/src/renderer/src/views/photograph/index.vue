@@ -548,6 +548,7 @@ let bigShowLoading = ref(false);
 
 let onLineCamList = [];
 
+let noDownVideoList = [];
 // canvas 存储器
 let canvasAllList = [];
 let canvasTwo = null;
@@ -568,7 +569,6 @@ onMounted(async () => {
   document.addEventListener("click", clickHandler);
   connectCaptureConfig();
   window.electron.ipcRenderer.on("down-video-process", (event, message) => {
-    console.log("down-video-process", message);
     let curOnlineCamNum = captureTreeData.value.filter((item) => item.isConnect).length;
     let stepProcess = 100 / curOnlineCamNum;
     if (message.msgType === "success" && curOnlineCamNum > 0) {
@@ -662,6 +662,18 @@ const updataConfigJsonfn = async () => {
 };
 
 const testPhotoFn = () => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   window.electron.ipcRenderer.send(
     "z2progetSnapPhotoApi",
     captureTreeData.value.map((item) => item.ipAddr)
@@ -802,6 +814,18 @@ const initDomHeight = () => {
 
 // z2proRebootFn 重启相机
 const z2proRebootFn = async () => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   globals.$store.state.fullScreenloadingText = "相机重启中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   isBigShowVideos.value = false;
@@ -893,7 +917,7 @@ const initZ2proDataAndCamzList = async () => {
     }
     if (message.msgType === "success" && message.data.camList.length === 0) {
       ElMessage({
-        message: "相机已初始化,检测到相机数量为0,请检查相机连接是否正常",
+        message: "相机连接失败,请检查相机连接是否正常",
         type: "error",
         grouping: true,
         plain: true,
@@ -908,14 +932,24 @@ const initZ2proDataAndCamzList = async () => {
         (item.sort = index + 1),
           (item.isConnect = item.onlineStatus === 1 ? true : false);
       });
-      console.log(message.data.camInfo);
+
       resolutionCam.value = message.data.camInfo.resolution; // 分辨率
       fpsValue.value = message.data.camInfo.fps; // 帧率
       bitrateValue.value = message.data.camInfo.bitrate; // 码率
-      shutterValue.value = message.data.camInfo.shutter; // 快门速度
+      const exists = shutterOpts.some((opt) => opt.value === shutter);
+      if (exists) {
+        shutterValue.value = 1 / message.data.camInfo.shutter; // 快门速度
+      } else {
+        shutterValue.value = message.data.camInfo.shutter;
+      }
       aeModelValue.value = message.data.camInfo.aeMode; // 曝光模式
       encCodeValue.value = message.data.camInfo.encType; // 编码格式
       isoValue.value = message.data.camInfo.iso; // 曝光增益
+
+      z2proConfigJSON.necType = message.data.camInfo.encType;
+      z2proConfigJSON.resolutionCam = message.data.camInfo.resolution;
+      z2proConfigJSON.fpsValue = message.data.camInfo.fps;
+      z2proConfigJSON.bitrate = message.data.camInfo.bitrate;
 
       captureTreeData.value = message.data.camList;
       onLineCamList = message.data.camList.filter((item) => item.onlineStatus === 1);
@@ -1016,6 +1050,7 @@ const captureZ2proFindFn = async () => {
         globals.$store.state.isFullScreenLoading = false;
         return;
       }
+
       if (message.msgType === "success" && message.data.camList.length > 0) {
         message.data.camList.forEach((item, index) => {
           (item.sort = index + 1),
@@ -1025,11 +1060,20 @@ const captureZ2proFindFn = async () => {
         resolutionCam.value = message.data.camInfo.resolution; // 分辨率
         fpsValue.value = message.data.camInfo.fps; // 帧率
         bitrateValue.value = message.data.camInfo.bitrate; // 码率
-        shutterValue.value = message.data.camInfo.shutter; // 快门速度
+        const exists = shutterOpts.some((opt) => opt.value === shutter);
+        if (exists) {
+          shutterValue.value = 1 / message.data.camInfo.shutter; // 快门速度
+        } else {
+          shutterValue.value = message.data.camInfo.shutter;
+        }
         aeModelValue.value = message.data.camInfo.aeMode; // 曝光模式
         encCodeValue.value = message.data.camInfo.encType; // 编码格式
         isoValue.value = message.data.camInfo.iso; // 曝光增益
 
+        z2proConfigJSON.necType = message.data.camInfo.encType;
+        z2proConfigJSON.resolutionCam = message.data.camInfo.resolution;
+        z2proConfigJSON.fpsValue = message.data.camInfo.fps;
+        z2proConfigJSON.bitrate = message.data.camInfo.bitrate;
         captureTreeData.value = message.data.camList;
         onLineCamList = message.data.camList.filter((item) => item.onlineStatus === 1);
         globals.$store.state.isFullScreenLoading = false;
@@ -1042,16 +1086,6 @@ const captureZ2proFindFn = async () => {
 };
 
 const z2proFormattfFn = async () => {
-  if (!captureTreeData.value.length) {
-    return ElMessage({
-      message: "相机连接数量为0， 不可进行此操作",
-      type: "error",
-      grouping: true,
-      plain: true,
-      showClose: true,
-      offset: 75,
-    });
-  }
   let onLineCams = captureTreeData.value.filter((item) => item.isConnect);
   if (!onLineCams.length) {
     return ElMessage({
@@ -1116,28 +1150,46 @@ const z2proFormattfFn = async () => {
 // 下载最后一次拍摄视频
 const downLoadsVideo = async (pathInfo) => {
   let arr = captureTreeData.value.filter((item) => item.isConnect);
+
   await window.electron.ipcRenderer.send("z2proDownMp4EleApi", {
     camList: arr.map((item) => item.ipAddr),
     pathInfo: pathInfo,
     downPath: z2proConfigJSON.z2proDownPath,
+    filePath: filesList.value[0].filePath,
   });
   window.electron.ipcRenderer.once("down-video-mkdir", (event, message) => {
     if (message.msgType === "success") {
-      let pathName = message.msg.split("\\");
-      let cfileName = pathName[pathName.length - 1];
-      filesList.value.unshift({
-        fileName: cfileName,
-        filePath: message.msg,
-        fileCreatedTime: moment().format("YYYY-MM-DD HH:mm:ss"),
-        shootTime: pathInfo.formatTime,
-        downStatus: "0.00%",
-      });
+      filesList.value[0].shootTime = pathInfo.formatTime;
+      filesList.value[0].downStatus = "0.00%";
     }
   });
 };
 // 设置编码方式
 const encCodeChangeFn = async (val) => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   if (val === z2proConfigJSON.necType) return;
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   globals.$store.state.fullScreenloadingText = "录像编码设置中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await window.electron.ipcRenderer.send("setEncTypeApi", val);
@@ -1170,6 +1222,29 @@ const encCodeChangeFn = async (val) => {
 
 // 设置自动白平衡
 const awbChangeFn = async () => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   globals.$store.state.fullScreenloadingText = "设置自动白平衡中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await window.electron.ipcRenderer.send("setCamAWBApi");
@@ -1200,7 +1275,30 @@ const awbChangeFn = async () => {
 
 // 设置分辨率 change
 const alignModelChangeFn = async (val) => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   if (val === z2proConfigJSON.resolutionCam) return;
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   globals.$store.state.fullScreenloadingText = "相机分辨率设置中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await window.electron.ipcRenderer.send("setCamResolutonApi", val);
@@ -1240,7 +1338,30 @@ const aeTypeChangeFn = () => {
 
 //  设置帧率  change
 const camFpsChangeFn = async (val) => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   if (val === z2proConfigJSON.fpsValue) return;
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   globals.$store.state.fullScreenloadingText = "相机帧率设置中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await window.electron.ipcRenderer.send("setCamFpsApi", val);
@@ -1272,8 +1393,31 @@ const camFpsChangeFn = async (val) => {
 };
 // 设置码率 change
 const camBitrateChangeFn = async (val) => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   if (val === z2proConfigJSON.bitrate) return;
-  globals.$store.state.fullScreenloadingText = "相机帧率设置中，请稍等...";
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
+  globals.$store.state.fullScreenloadingText = "相机码率设置中，请稍等...";
   globals.$store.state.isFullScreenLoading = true;
   await window.electron.ipcRenderer.send("setCamBitRateApi", val);
   window.electron.ipcRenderer.once("worker-bitrate", async (event, message) => {
@@ -1304,13 +1448,33 @@ const camBitrateChangeFn = async (val) => {
 };
 // 快门速度
 const camShutterChangeFn = async (val) => {
-  if (val === z2proConfigJSON.shutter) return;
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   await window.electron.ipcRenderer.send("setCamShutterApi", val);
   window.electron.ipcRenderer.once("worker-shutter", async (event, message) => {
     if (message.msgType === "success") {
-      z2proConfigJSON.shutter = val;
     } else {
-      shutterValue.value = z2proConfigJSON.shutter;
       ElMessage({
         message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
@@ -1325,21 +1489,33 @@ const camShutterChangeFn = async (val) => {
 
 // ISO
 const camISOChangeFn = async (val) => {
-  if (val === z2proConfigJSON.ISOValue) return;
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
+  if (isGather.value) {
+    ElMessage({
+      message: "正在录制数据中，请不要进行操作！",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   await window.electron.ipcRenderer.send("setCamISOApi", val);
   window.electron.ipcRenderer.once("worker-iso", async (event, message) => {
     if (message.msgType === "success") {
-      z2proConfigJSON.ISOValue = val;
-      ElMessage({
-        message: "操作成功",
-        type: "success",
-        grouping: true,
-        plain: true,
-        showClose: true,
-        offset: 75,
-      });
     } else {
-      isoValue.value = z2proConfigJSON.ISOValue;
       ElMessage({
         message: "设置失败, 请稍等5-10秒后再重试",
         type: "error",
@@ -1439,6 +1615,19 @@ const updateSingleVideoStream = async (blob) => {
 };
 
 const axiesAlignChangeFn = (val) => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "相机在线连接数量为0， 不可进行此操作",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    axiesAlign.value = !axiesAlign.value;
+    return;
+  }
   if (isBigShowVideos.value === false) {
     return ElMessage({
       message: "只在单个相机预览时有效",
@@ -1590,7 +1779,6 @@ const bigShowCurData = async (item, type = "view") => {
 };
 
 //  关闭最大显示
-
 const bigShowcloseFn = async () => {
   isBigShowVideos.value = false;
   if (!captureTreeData.value.length) return;
@@ -1602,6 +1790,18 @@ const bigShowcloseFn = async () => {
 
 // zpro开始拍摄事件
 const setGatherStatusFn = async () => {
+  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
+  if (!isExistOpenCapture.length) {
+    ElMessage({
+      message: "请先确认在线相机数量至少为一台",
+      type: "error",
+      grouping: true,
+      plain: true,
+      showClose: true,
+      offset: 75,
+    });
+    return;
+  }
   if (!syncStatus.value) {
     return ElMessage({
       message: "相机未同步，不容许拍摄，请等待同步后再拍摄",
@@ -1613,22 +1813,26 @@ const setGatherStatusFn = async () => {
     });
   }
   isGather.value = true;
-  let isExistOpenCapture = captureTreeData.value.filter((item) => item.isConnect);
-  if (!isExistOpenCapture.length) {
-    ElMessage({
-      message: "请先确认在线相机数量至少为一台",
-      type: "error",
-      grouping: true,
-      plain: true,
-      showClose: true,
-      offset: 75,
-    });
-    isGather.value = false;
-    return;
-  }
-  await window.electron.ipcRenderer.send("z2proStartShootApi");
+  let fileName = moment()
+    .format("YYYY-MM-DD HH:mm:ss")
+    .replaceAll("-", "")
+    .replace("_", "");
+  filesList.value.unshift({
+    fileName: fileName,
+    filePath: "",
+    fileCreatedTime: moment().format("YYYY-MM-DD HH:mm:ss"),
+    shootTime: 0,
+    downStatus: "录制中",
+  });
+  await window.electron.ipcRenderer.send("z2proStartShootApi", {
+    fileName: fileName,
+    downPath: z2proConfigJSON.z2proDownPath,
+  });
+
   window.electron.ipcRenderer.once("worker-startShoot", (err, message) => {
     if (message.msgType === "success") {
+      filesList.value[0].filePath = message.data;
+      // noDownVideoList.push({ fileName: fileName, filePath: message.data });
       myTimers = setInterval(() => {
         if (curOnceGatherTime.value > 0) {
           curOnceGatherTime.value = curOnceGatherTime.value - 1000;
