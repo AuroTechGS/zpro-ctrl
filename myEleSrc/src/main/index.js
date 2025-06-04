@@ -594,7 +594,6 @@ ipcMain.handle('startZ2proSingleCam', async (event, val) => {
 
 // 获取相机同步结果
 ipcMain.on('getZ2proSyncStatusApi', async (event) => {
-  console.log('getZ2proSyncStatusApi')
   try {
     if (worker) {
       let messageParams = {

@@ -936,7 +936,7 @@ const initZ2proDataAndCamzList = async () => {
       resolutionCam.value = message.data.camInfo.resolution; // 分辨率
       fpsValue.value = message.data.camInfo.fps; // 帧率
       bitrateValue.value = message.data.camInfo.bitrate; // 码率
-      const exists = shutterOpts.some((opt) => opt.value === shutter);
+      const exists = shutterOpts.some((opt) => opt.value === shutterValue.value);
       if (exists) {
         shutterValue.value = 1 / message.data.camInfo.shutter; // 快门速度
       } else {
@@ -1060,7 +1060,7 @@ const captureZ2proFindFn = async () => {
         resolutionCam.value = message.data.camInfo.resolution; // 分辨率
         fpsValue.value = message.data.camInfo.fps; // 帧率
         bitrateValue.value = message.data.camInfo.bitrate; // 码率
-        const exists = shutterOpts.some((opt) => opt.value === shutter);
+        const exists = shutterOpts.some((opt) => opt.value === shutterValue.value);
         if (exists) {
           shutterValue.value = 1 / message.data.camInfo.shutter; // 快门速度
         } else {
